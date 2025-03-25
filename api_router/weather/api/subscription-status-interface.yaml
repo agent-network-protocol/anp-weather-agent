@@ -1,0 +1,80 @@
+openapi: 3.0.0
+info:
+  title: 天气信息订阅状态查询接口
+  description: "用于查询天气信息订阅的状态，包括有效期、付款状态等"
+  version: "1.0"
+servers:
+  - url: https://agent-weather.xyz
+paths:
+  /agents/travel/weather/api/subscription/status:
+    get:
+      summary: "Weather Service Subscription Status"
+      description: "查询天气信息订阅的状态，包括有效期、付款状态等"
+      parameters:
+        - name: subscriptionId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "订阅ID，创建订阅时返回的唯一标识"
+        - name: subscriberDID
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "订阅者的DID标识，用于验证身份和查询订阅"
+      responses:
+        '200':
+          description: "查询成功响应"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: "请求是否成功"
+                  msg:
+                    type: string
+                    description: "请求结果消息"
+                  data:
+                    type: object
+                    properties:
+                      subscriptionId:
+                        type: string
+                        description: "订阅ID"
+                      status:
+                        type: string
+                        enum: [active, pending, expired]
+                        description: "订阅状态：active - 有效，pending - 待处理，expired - 已过期"
+                      type:
+                        type: string
+                        enum: [monthly, yearly]
+                        description: "订阅类型：按月或按年"
+                      startDate:
+                        type: string
+                        format: date-time
+                        description: "订阅开始时间"
+                      expiryDate:
+                        type: string
+                        format: date-time
+                        description: "订阅过期时间"
+                      remainingDays:
+                        type: integer
+                        description: "剩余有效天数"
+                      paymentStatus:
+                        type: string
+                        enum: [paid, pending, failed]
+                        description: "支付状态：paid - 已支付，pending - 待支付，failed - 支付失败"
+                      regions:
+                        type: array
+                        description: "订阅的地区列表"
+                        items:
+                          type: string
+                          example: "北京"
+                      features:
+                        type: array
+                        description: "订阅的功能列表"
+                        items:
+                          type: string
+                          example: "extreme_weather_alert" 

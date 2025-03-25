@@ -172,3 +172,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Ensure environment variable files are not committed
+.env.local
+.env.development
+.env.test
+.env.production

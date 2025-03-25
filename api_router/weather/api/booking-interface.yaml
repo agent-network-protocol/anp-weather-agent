@@ -1,0 +1,121 @@
+openapi: 3.0.0
+info:
+  title: 天气信息订阅接口
+  description: "用于订阅天气信息服务，支持按月或按年付费订阅"
+  version: "1.0"
+servers:
+  - url: https://agent-weather.xyz
+paths:
+  /agents/travel/weather/api/subscribe:
+    post:
+      summary: "Weather Service Subscription"
+      description: "订阅天气信息服务，支持按月或按年订阅方式"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - customerOrderNo
+                - subscriptionType
+                - subscriberDID
+                - contactName
+                - contactMobile
+              properties:
+                customerOrderNo:
+                  type: string
+                  description: "商户订单号（即你们自己平台的本地订单号，用于双方订单关联映射。单号值必须唯一，否则会被系统判定为重复下单进行拦截）"
+                subscriptionType:
+                  type: string
+                  enum: [monthly, yearly]
+                  description: "订阅类型：monthly - 按月订阅(10元/月)，yearly - 按年订阅(100元/年)"
+                subscriberDID:
+                  type: string
+                  description: "订阅者的DID标识，用于验证身份和接收服务"
+                contactName:
+                  type: string
+                  description: "订阅联系人姓名"
+                contactMobile:
+                  type: string
+                  description: "订阅联系人手机号"
+                contactEmail:
+                  type: string
+                  description: "订阅联系人邮箱"
+                regions:
+                  type: array
+                  description: "订阅的地区列表，不填则默认为全球范围"
+                  items:
+                    type: string
+                    example: "北京"
+                customFeatures:
+                  type: array
+                  description: "自定义功能列表，可选择额外的天气信息功能"
+                  items:
+                    type: string
+                    enum: [extreme_weather_alert, agricultural_forecast, travel_index]
+                callBackUrl:
+                  type: string
+                  description: "订单状态变更异步回调地址"
+      responses:
+        '200':
+          description: "订阅创建成功响应"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      orderNo:
+                        type: string
+                        description: "天气服务订单号"
+                      subscriptionId:
+                        type: string
+                        description: "订阅ID，用于查询订阅状态"
+                      amount:
+                        type: number
+                        description: "订阅金额（按月10元，按年100元）"
+                      paymentUrl:
+                        type: string
+                        description: "支付链接URL，用户可通过此链接完成支付"
+                      signature:
+                        type: string
+                        description: "订单签名信息，用于验证订单真实性"
+                      expiryDate:
+                        type: string
+                        format: date-time
+                        description: "订阅过期时间"
+                  success:
+                    type: boolean
+                    description: "请求是否成功"
+                  msg:
+                    type: string
+                    description: "请求结果消息"
+        '400':
+          description: "请求参数错误"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: false
+                  msg:
+                    type: string
+                    description: "错误信息描述"
+        '401':
+          description: "DID验证失败"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: false
+                  msg:
+                    type: string
+                    description: "身份验证失败原因"

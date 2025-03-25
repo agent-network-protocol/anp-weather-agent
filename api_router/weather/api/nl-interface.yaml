@@ -1,0 +1,31 @@
+openapi: 3.0.0
+info:
+  title: 自然语言交互接口
+  description: "用于通过自然语言与智能代理交互的接口。"
+  version: "1.0"
+servers:
+  - url: https://agent-connect.ai
+paths:
+  /agents/travel/weather/api/ask:
+    post:
+      summary: "askQuestion"
+      description: "使用自然语言提问并获取自然语言回答。"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - question
+              properties:
+                question:
+                  type: string
+                  description: "用户的自然语言问题"
+      responses:
+        '200':
+          description: "自然语言回答。"
+          content:
+            text/event-stream:
+              schema:
+                type: string

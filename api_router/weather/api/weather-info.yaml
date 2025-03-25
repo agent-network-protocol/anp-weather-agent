@@ -1,0 +1,93 @@
+openapi: 3.0.0
+info:
+  title: 天气查询接口
+  description: "根据城市名称查询天气信息"
+  version: "1.0"
+servers:
+  - url: https://agent-connect.ai
+paths:
+  /agents/travel/weather/api/weather_info:
+    get:
+      summary: "查询天气信息"
+      description: "根据城市中文名称查询天气信息"
+      parameters:
+        - name: cityName
+          in: query
+          required: true
+          description: "城市中文名称，用于查询对应城市的天气信息"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "天气查询结果"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: "返回状态，1：成功；0：失败"
+                  count:
+                    type: string
+                    description: "返回结果总数目"
+                  info:
+                    type: string
+                    description: "返回的状态信息"
+                  infocode:
+                    type: string
+                    description: "返回状态说明，10000代表正确"
+                  forecasts:
+                    type: array
+                    description: "预报天气信息数据"
+                    items:
+                      type: object
+                      properties:
+                        city:
+                          type: string
+                          description: "城市名称"
+                        adcode:
+                          type: string
+                          description: "城市编码"
+                        province:
+                          type: string
+                          description: "省份名称"
+                        reporttime:
+                          type: string
+                          description: "预报发布时间"
+                        casts:
+                          type: array
+                          description: "预报数据列表，按顺序为当天、第二天、第三天的预报数据"
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                description: "日期"
+                              week:
+                                type: string
+                                description: "星期几"
+                              dayweather:
+                                type: string
+                                description: "白天天气现象"
+                              nightweather:
+                                type: string
+                                description: "晚上天气现象"
+                              daytemp:
+                                type: string
+                                description: "白天温度"
+                              nighttemp:
+                                type: string
+                                description: "晚上温度"
+                              daywind:
+                                type: string
+                                description: "白天风向"
+                              nightwind:
+                                type: string
+                                description: "晚上风向"
+                              daypower:
+                                type: string
+                                description: "白天风力"
+                              nightpower:
+                                type: string
+                                description: "晚上风力"
