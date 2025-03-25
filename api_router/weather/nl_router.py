@@ -20,7 +20,7 @@ async def stream_response(response: str):
         await asyncio.sleep(0.1)  # 添加一些延迟使流更自然
     yield "data: [DONE]\n\n"
 
-@router.post("/agents/travel/weather/api/ask")
+@router.post("/api/ask")
 async def ask_weather_question(request: Request):
     """
     处理用户关于天气的自然语言问题，并返回流式回答

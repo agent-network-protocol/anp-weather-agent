@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse
-import os
 from pathlib import Path
 import logging
 
-router = APIRouter(prefix="/agents")
+# 修改路由前缀，去掉 agents/travel/weather
+router = APIRouter()
 
-@router.get("/travel/weather/api_files/{yaml_file}")
+@router.get("/api_files/{yaml_file}")
 async def get_yaml_file(yaml_file: str):
     """
     获取天气智能体的YAML文件

@@ -1,15 +1,15 @@
-from typing import Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, Request, Query
-from pydantic import BaseModel, Field
+from typing import  Optional
+from fastapi import APIRouter,  Query
+from pydantic import BaseModel
 import aiohttp
 import json
 import traceback
 import logging
-import os
 from pathlib import Path
 from config import AMAP_WEATHER_API_URL, AMAP_API_KEY
 
-router = APIRouter(prefix="/agents")
+# 修改路由前缀，去掉 agents/travel/weather
+router = APIRouter()
 
 # 高德地图天气API参数
 AMAP_EXTENSIONS = "all"
@@ -27,7 +27,7 @@ class WeatherInfoResponse(BaseModel):
     infocode: str
     forecasts: list
 
-@router.get("/travel/weather/api/weather_info")
+@router.get("/api/weather_info")
 async def get_weather_info(cityName: str = Query(..., description="城市中文名称，用于查询对应城市的天气信息")):
     """
     获取城市天气信息

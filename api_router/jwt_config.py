@@ -5,7 +5,6 @@ JWT configuration module providing functions to get JWT public and private keys.
 import os
 import logging
 from typing import Optional
-from pathlib import Path
 from config import JWT_PRIVATE_KEY_PATH, JWT_PUBLIC_KEY_PATH
 
 # 确保密钥文件存在

@@ -110,7 +110,6 @@ async def cleanup_expired_nonces():
     """清理过期的 nonce 记录"""
     try:
         current_time = datetime.now(timezone.utc)
-        expiration_time = current_time - timedelta(minutes=NONCE_EXPIRATION_MINUTES)
         
         # 清理已使用的过期 nonce
         cleaned_count = 0

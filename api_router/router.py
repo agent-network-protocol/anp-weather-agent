@@ -6,18 +6,23 @@ import json
 import asyncio
 from .discovery_router import router as discovery_router
 import logging
+from .weather.ad_router import router as weather_ad_router
+from .weather.yaml_router import router as weather_yaml_router
+from .weather.weather_info_router import router as weather_info_router
+from .weather.nl_router import router as weather_nl_router
+from .weather.subscription_router import router as weather_subscription_router
 
 router = APIRouter()
 
 # 注册智能体发现协议路由（需要放在最前面，避免路径冲突）
 router.include_router(discovery_router)
 
-# 不再注册不存在的路由
-# router.include_router(weather_info_router)
-# router.include_router(weather_ad_router)
-# router.include_router(weather_yaml_router)
-# router.include_router(weather_subscription_router)
-# router.include_router(weather_nl_router)
+# 注册天气路由
+router.include_router(weather_ad_router)
+router.include_router(weather_yaml_router)
+router.include_router(weather_info_router)
+router.include_router(weather_subscription_router)
+router.include_router(weather_nl_router)
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
 

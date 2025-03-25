@@ -12,7 +12,7 @@ router = APIRouter()
 # 模拟数据存储
 subscriptions_db = {}
 
-@router.post("/agents/travel/weather/api/subscribe")
+@router.post("/api/subscribe")
 async def create_weather_subscription(request: Request):
     """
     创建天气信息订阅
@@ -121,7 +121,7 @@ async def create_weather_subscription(request: Request):
         )
     """
 
-@router.get("/agents/travel/weather/api/subscription/status")
+@router.get("/api/subscription/status")
 async def get_subscription_status(
     subscriptionId: str = Query(..., description="订阅ID"),
     subscriberDID: str = Query(..., description="订阅者DID")

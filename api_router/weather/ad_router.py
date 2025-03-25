@@ -1,12 +1,12 @@
-from typing import Dict, Any
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 import logging
 from config import AGENT_DESCRIPTION_JSON_DOMAIN, DID_DOMAIN, DID_PATH
 
-router = APIRouter(prefix="/agents")
+# 修改路由前缀，去掉 agents/travel/weather
+router = APIRouter()
 
-@router.get("/travel/weather/ad.json")
+@router.get("/ad.json")
 async def get_weather_agent_description():
     """
     提供天气智能体的描述信息
@@ -23,7 +23,8 @@ async def get_weather_agent_description():
                 "ad": "https://agent-network-protocol.com/ad#"
             },
             "@type": "ad:AgentDescription",
-            "@id": f"https://{AGENT_DESCRIPTION_JSON_DOMAIN}/agents/travel/weather/ad.json",
+            # 修改 JSON 中的路径，去掉 agents/travel/weather
+            "@id": f"https://{AGENT_DESCRIPTION_JSON_DOMAIN}/ad.json",
             "name": "天气智能体",
             "did": f"did:wba:{DID_DOMAIN}:{DID_PATH}",
             "description": "天气智能体，提供全国城市天气信息查询服务。",
@@ -45,25 +46,29 @@ async def get_weather_agent_description():
                 {
                     "@type": "ad:StructuredInterface",
                     "protocol": "YAML",
-                    "url": f"https://{AGENT_DESCRIPTION_JSON_DOMAIN}/agents/travel/weather/api_files/weather-info.yaml",
+                    # 修改 API 文件路径，去掉 agents/travel/weather
+                    "url": f"https://{AGENT_DESCRIPTION_JSON_DOMAIN}/api_files/weather-info.yaml",
                     "description": "提供天气查询服务的OpenAPI的YAML文件。"
                 },
                 {
                     "@type": "ad:StructuredInterface",
                     "protocol": "YAML",
-                    "url": f"https://{AGENT_DESCRIPTION_JSON_DOMAIN}/agents/travel/weather/api_files/booking-interface.yaml",
+                    # 修改 API 文件路径，去掉 agents/travel/weather
+                    "url": f"https://{AGENT_DESCRIPTION_JSON_DOMAIN}/api_files/booking-interface.yaml",
                     "description": "提供天气信息预订服务的OpenAPI的YAML文件。"
                 },
                 {
                     "@type": "ad:StructuredInterface",
                     "protocol": "YAML",
-                    "url": f"https://{AGENT_DESCRIPTION_JSON_DOMAIN}/agents/travel/weather/api_files/subscription-status-interface.yaml",
+                    # 修改 API 文件路径，去掉 agents/travel/weather
+                    "url": f"https://{AGENT_DESCRIPTION_JSON_DOMAIN}/api_files/subscription-status-interface.yaml",
                     "description": "提供天气订阅状态查询服务的OpenAPI的YAML文件。"
                 },
                 {
                     "@type": "ad:NaturalLanguageInterface",
                     "protocol": "YAML",
-                    "url": f"https://{AGENT_DESCRIPTION_JSON_DOMAIN}/agents/travel/weather/api_files/nl-interface.yaml",
+                    # 修改 API 文件路径，去掉 agents/travel/weather
+                    "url": f"https://{AGENT_DESCRIPTION_JSON_DOMAIN}/api_files/nl-interface.yaml",
                     "description": "提供通过自然语言与智能代理交互的接口。"
                 }
             ]
