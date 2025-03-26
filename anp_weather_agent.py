@@ -64,15 +64,9 @@ if __name__ == "__main__":
     # 初始化日志配置
     setup_logging()
     set_log_color_level(logging.INFO)
+
+    # 如果要修改端口，请确认配置 AGENT_DESCRIPTION_JSON_DOMAIN是否需要修改
     g_server_port = 9870
 
-    # ssl_certfile = "/home/code-ai-teacher/key/educopilot.net.pem"  # SSL 证书文件路径
-    # ssl_keyfile = "/home/code-ai-teacher/key/educopilot.net.key"     # SSL 私钥文���路径
-    # 如果是macOS系统
-    if sys.platform == 'darwin':
-        logging.info(f'启动服务，端口号：9000')
-        uvicorn.run(app, host="0.0.0.0", port=9000)
-    else:
-        logging.info(f'启动服务，端口号：{g_server_port}')
-        # uvicorn.run(app, host="0.0.0.0", port=g_server_port, ssl_certfile=ssl_certfile, ssl_keyfile=ssl_keyfile)
-        uvicorn.run(app, host="0.0.0.0", port=g_server_port)
+    logging.info(f'启动服务，端口号：{g_server_port}')
+    uvicorn.run(app, host="0.0.0.0", port=g_server_port)
