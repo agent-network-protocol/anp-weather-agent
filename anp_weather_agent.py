@@ -44,21 +44,26 @@ app.add_middleware(
 # Add DID authentication middleware
 app.middleware("http")(did_auth_middleware)
 
+
 @app.get("/openapi.yaml", response_class=FileResponse)
 async def get_openapi_yaml():
     return FileResponse(Path(current_directory) / "protocol" / "0.0.1.yaml")
 
+
 @app.get("/logo.png", response_class=FileResponse)
 async def get_logo():
-    return FileResponse(Path(current_directory)  / "logo.png")
+    return FileResponse(Path(current_directory) / "logo.png")
+
 
 @app.get("/legal", response_class=HTMLResponse)
 async def legal_information():
     return "Provides message sending and receiving services, supporting instant communication between users. Allows users to send messages and query unread messages, supporting REST API-based services."
 
+
 @app.get("/ai-plugin.json", response_class=FileResponse)
 async def get_baidu_plugin():
     return FileResponse(Path(current_directory) / "protocol" / "ai-plugin.json")
+
 
 if __name__ == "__main__":
     # Initialize logging configuration
@@ -68,5 +73,5 @@ if __name__ == "__main__":
     # If modifying the port, please confirm if AGENT_DESCRIPTION_JSON_DOMAIN needs to be updated
     g_server_port = 9870
 
-    logging.info(f'Starting server on port: {g_server_port}')
+    logging.info(f"Starting server on port: {g_server_port}")
     uvicorn.run(app, host="0.0.0.0", port=g_server_port)

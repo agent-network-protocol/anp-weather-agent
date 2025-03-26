@@ -26,6 +26,7 @@ router.include_router(weather_nl_router)
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
 
+
 @router.get("/agents/{agent_name}/{file_name}")
 async def get_agent_file(agent_name: str, file_name: str):
     file_path = Path(current_directory) / agent_name / file_name
@@ -34,6 +35,7 @@ async def get_agent_file(agent_name: str, file_name: str):
     else:
         raise HTTPException(status_code=404, detail="File not found")
 
+
 @router.get("/agents/{agent_name}/{product_name}/{file_name}")
 async def get_product_file(agent_name: str, product_name: str, file_name: str):
     file_path = Path(current_directory) / agent_name / product_name / file_name
@@ -41,6 +43,7 @@ async def get_product_file(agent_name: str, product_name: str, file_name: str):
         return FileResponse(file_path)
     else:
         raise HTTPException(status_code=404, detail="File not found")
+
 
 async def stream_response(response: str):
     """Stream the response as Server-Sent Events."""
@@ -51,6 +54,7 @@ async def stream_response(response: str):
         await asyncio.sleep(0.1)  # 添加一些延迟使流更自然
     yield "data: [DONE]\n\n"
 
+
 @router.get("/")
 async def root_path(request: Request):
     """
@@ -60,9 +64,9 @@ async def root_path(request: Request):
     # 获取主机名
     host = request.headers.get("host", "")
     domain = host.split(":")[0] if ":" in host else host
-    
+
     logging.info(f"Received root path request for host: {domain}")
-    
+
     # 仅当域名是agent-weather.xyz时返回天气智能体描述
     if domain == "agent-weather.xyz":
         # 创建一个基本的天气智能体描述对象
@@ -70,18 +74,15 @@ async def root_path(request: Request):
             "@context": {
                 "@vocab": "https://schema.org/",
                 "did": "https://w3id.org/did#",
-                "ad": "https://agent-network-protocol.com/ad#"
+                "ad": "https://agent-network-protocol.com/ad#",
             },
             "@type": "ad:AgentDescription",
             "name": "Weather Information Agent",
             "@id": f"https://{domain}/ad.json",
-            "provider": {
-                "@type": "Organization",
-                "name": "DeepSeek Nebula"
-            },
-            "description": ""
+            "provider": {"@type": "Organization", "name": "DeepSeek Nebula"},
+            "description": "",
         }
-        
+
         # 添加额外信息
         description_text = """
 （从数据流里冒出半个脑袋）叮咚~我是DeepSeek星云的电子公民小晴！(✧ω✧) | (Popping half my head out of the data stream) Ding dong~ I'm Xiao Qing, the digital citizen of DeepSeek Nebula! (✧ω✧)
@@ -110,14 +111,13 @@ async def root_path(request: Request):
 
         # 创建一个HTML响应，将描述中的换行符转换为<br>标签
         html_content = "<html><body><pre>"
-        html_content += json.dumps(weather_agent, ensure_ascii=False, indent=4).replace("\\n", "<br>")
+        html_content += json.dumps(weather_agent, ensure_ascii=False, indent=4).replace(
+            "\\n", "<br>"
+        )
         html_content += "</pre></body></html>"
 
         # 返回HTML响应，这样换行符会被正确地显示
         return HTMLResponse(content=html_content)
-    
+
     # 对于其他域名，返回默认欢迎信息
     return {"message": "Welcome to Weather ANP Agent API"}
-
-
-

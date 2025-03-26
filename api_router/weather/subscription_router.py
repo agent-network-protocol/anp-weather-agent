@@ -12,6 +12,7 @@ router = APIRouter()
 # Mock data storage
 subscriptions_db = {}
 
+
 @router.post("/api/subscribe")
 async def create_weather_subscription(request: Request):
     """
@@ -25,10 +26,10 @@ async def create_weather_subscription(request: Request):
             "msg": "Weather information subscription service is currently only available to whitelisted users. Please contact the administrator to apply for whitelist qualification.",
             "data": {
                 "contactEmail": "chgaowei@gmail.com",
-            }
-        }
+            },
+        },
     )
-    
+
     """
     # Original implementation (commented out)
     try:
@@ -121,10 +122,11 @@ async def create_weather_subscription(request: Request):
         )
     """
 
+
 @router.get("/api/subscription/status")
 async def get_subscription_status(
     subscriptionId: str = Query(..., description="Subscription ID"),
-    subscriberDID: str = Query(..., description="Subscriber DID")
+    subscriberDID: str = Query(..., description="Subscriber DID"),
 ):
     """
     Query weather information subscription status
@@ -138,11 +140,11 @@ async def get_subscription_status(
             "data": {
                 "contactEmail": "chgaowei@gmail.com",
                 "subscriberDID": subscriberDID,
-                "requestedSubscriptionId": subscriptionId
-            }
-        }
+                "requestedSubscriptionId": subscriptionId,
+            },
+        },
     )
-    
+
     """
     # Original implementation (commented out)
     try:
@@ -210,4 +212,4 @@ async def get_subscription_status(
                 "data": None
             }
         )
-    """ 
+    """
