@@ -3,42 +3,42 @@ from fastapi.responses import PlainTextResponse
 from pathlib import Path
 import logging
 
-# 修改路由前缀，去掉 agents/travel/weather
+# Modified route prefix, removed agents/travel/weather
 router = APIRouter()
 
 @router.get("/api_files/{yaml_file}")
 async def get_yaml_file(yaml_file: str):
     """
-    获取天气智能体的YAML文件
+    Get weather agent YAML files
     
     Args:
-        yaml_file: YAML文件名
+        yaml_file: YAML filename
         
     Returns:
-        YAML文件内容
+        YAML file content
     """
     try:
-        # 获取当前文件所在目录
+        # Get current file directory
         current_dir = Path(__file__).parent
-        # 构建YAML文件路径
+        # Build YAML file path
         yaml_file_path = current_dir / "api" / yaml_file
         
-        logging.info(f"请求YAML文件: {yaml_file_path}")
+        logging.info(f"Requested YAML file: {yaml_file_path}")
         
-        # 检查文件是否存在
+        # Check if file exists
         if not yaml_file_path.exists():
-            logging.error(f"YAML文件不存在: {yaml_file_path}")
-            raise HTTPException(status_code=404, detail=f"YAML文件 {yaml_file} 不存在")
+            logging.error(f"YAML file does not exist: {yaml_file_path}")
+            raise HTTPException(status_code=404, detail=f"YAML file {yaml_file} does not exist")
         
-        # 读取YAML文件内容
+        # Read YAML file content
         with open(yaml_file_path, "r", encoding="utf-8") as f:
             yaml_content = f.read()
         
-        logging.info(f"成功读取YAML文件: {yaml_file}")
+        logging.info(f"Successfully read YAML file: {yaml_file}")
         return PlainTextResponse(content=yaml_content, media_type="application/x-yaml")
     
     except Exception as e:
-        logging.error(f"获取YAML文件时出错: {str(e)}")
+        logging.error(f"Error getting YAML file: {str(e)}")
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=f"获取YAML文件时出错: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting YAML file: {str(e)}")

@@ -3,19 +3,19 @@ from fastapi.responses import JSONResponse
 import logging
 from config import AGENT_DESCRIPTION_JSON_DOMAIN, DID_DOMAIN, DID_PATH
 
-# 修改路由前缀，去掉 agents/travel/weather
+# Modified route prefix, removed agents/travel/weather
 router = APIRouter()
 
 @router.get("/ad.json")
 async def get_weather_agent_description():
     """
-    提供天气智能体的描述信息
+    Provide weather agent description information
     
     Returns:
-        天气智能体描述的JSON-LD格式
+        Weather agent description in JSON-LD format
     """
     try:
-        # 创建天气智能体描述
+        # Create weather agent description
         weather_agent = {
             "@context": {
                 "@vocab": "https://schema.org/",
@@ -23,11 +23,11 @@ async def get_weather_agent_description():
                 "ad": "https://agent-network-protocol.com/ad#"
             },
             "@type": "ad:AgentDescription",
-            # 修改 JSON 中的路径，去掉 agents/travel/weather
+            # Modified path in JSON, removed agents/travel/weather
             "@id": f"http://{AGENT_DESCRIPTION_JSON_DOMAIN}/ad.json",
-            "name": "天气智能体",
+            "name": "Weather Agent",
             "did": f"did:wba:{DID_DOMAIN}:{DID_PATH}",
-            "description": "天气智能体，提供全国城市天气信息查询服务。",
+            "description": "Weather agent providing weather information lookup services for cities across the country.",
             "version": "1.0.0",
             "owner": {
                 "@type": "Organization",
@@ -46,41 +46,41 @@ async def get_weather_agent_description():
                 {
                     "@type": "ad:StructuredInterface",
                     "protocol": "YAML",
-                    # 修改 API 文件路径，去掉 agents/travel/weather
+                    # Modified API file path, removed agents/travel/weather
                     "url": f"http://{AGENT_DESCRIPTION_JSON_DOMAIN}/api_files/weather-info.yaml",
-                    "description": "提供天气查询服务的OpenAPI的YAML文件。"
+                    "description": "OpenAPI YAML file providing weather query services."
                 },
                 {
                     "@type": "ad:StructuredInterface",
                     "protocol": "YAML",
-                    # 修改 API 文件路径，去掉 agents/travel/weather
+                    # Modified API file path, removed agents/travel/weather
                     "url": f"http://{AGENT_DESCRIPTION_JSON_DOMAIN}/api_files/booking-interface.yaml",
-                    "description": "提供天气信息预订服务的OpenAPI的YAML文件。"
+                    "description": "OpenAPI YAML file providing weather information booking services."
                 },
                 {
                     "@type": "ad:StructuredInterface",
                     "protocol": "YAML",
-                    # 修改 API 文件路径，去掉 agents/travel/weather
+                    # Modified API file path, removed agents/travel/weather
                     "url": f"http://{AGENT_DESCRIPTION_JSON_DOMAIN}/api_files/subscription-status-interface.yaml",
-                    "description": "提供天气订阅状态查询服务的OpenAPI的YAML文件。"
+                    "description": "OpenAPI YAML file providing weather subscription status query services."
                 },
                 {
                     "@type": "ad:NaturalLanguageInterface",
                     "protocol": "YAML",
-                    # 修改 API 文件路径，去掉 agents/travel/weather
+                    # Modified API file path, removed agents/travel/weather
                     "url": f"http://{AGENT_DESCRIPTION_JSON_DOMAIN}/api_files/nl-interface.yaml",
-                    "description": "提供通过自然语言与智能代理交互的接口。"
+                    "description": "Interface for interacting with the agent through natural language."
                 }
             ]
         }
         
-        logging.info(f"返回天气智能体描述: {weather_agent}")
+        logging.info(f"Returning weather agent description: {weather_agent}")
         return JSONResponse(content=weather_agent, media_type="application/json; charset=utf-8")
         
     except Exception as e:
-        logging.error(f"获取天气智能体描述时出错: {str(e)}")
+        logging.error(f"Error getting weather agent description: {str(e)}")
         error_response = {
-            "error": "获取天气智能体描述时出错",
+            "error": "Error getting weather agent description",
             "details": str(e)
         }
         return JSONResponse(

@@ -6,23 +6,23 @@ import json
 import uuid
 from datetime import datetime, timedelta
 
-# 创建路由
+# Create router
 router = APIRouter()
 
-# 模拟数据存储
+# Mock data storage
 subscriptions_db = {}
 
 @router.post("/api/subscribe")
 async def create_weather_subscription(request: Request):
     """
-    创建天气信息订阅
+    Create weather information subscription
     """
-    # 返回白名单用户需要申请的信息
+    # Return information for whitelist application
     return JSONResponse(
         status_code=200,
         content={
             "success": False,
-            "msg": "天气信息订阅服务现阶段仅对白名单用户开放，请联系管理员申请白名单资格。",
+            "msg": "Weather information subscription service is currently only available to whitelisted users. Please contact the administrator to apply for whitelist qualification.",
             "data": {
                 "contactEmail": "chgaowei@gmail.com",
             }
@@ -30,15 +30,15 @@ async def create_weather_subscription(request: Request):
     )
     
     """
-    # 原有实现（已注释）
+    # Original implementation (commented out)
     try:
-        # 解析请求体
+        # Parse request body
         request_data = await request.json()
         
-        # 记录请求
-        logging.info(f"收到订阅请求: {request_data}")
+        # Log request
+        logging.info(f"Received subscription request: {request_data}")
         
-        # 必填字段校验
+        # Required fields validation
         required_fields = ["customerOrderNo", "subscriptionType", "subscriberDID", "contactName", "contactMobile"]
         for field in required_fields:
             if field not in request_data:
@@ -46,19 +46,19 @@ async def create_weather_subscription(request: Request):
                     status_code=400,
                     content={
                         "success": False,
-                        "msg": f"缺少必填字段: {field}",
+                        "msg": f"Missing required field: {field}",
                         "data": None
                     }
                 )
         
-        # 生成订阅ID
+        # Generate subscription ID
         subscription_id = str(uuid.uuid4())
         
-        # 根据订阅类型设置金额和过期时间
+        # Set amount and expiry date based on subscription type
         amount = 10 if request_data["subscriptionType"] == "monthly" else 100
         expiry_date = datetime.now() + timedelta(days=30 if request_data["subscriptionType"] == "monthly" else 365)
         
-        # 创建订阅记录
+        # Create subscription record
         subscription = {
             "subscriptionId": subscription_id,
             "customerOrderNo": request_data["customerOrderNo"],
@@ -77,18 +77,18 @@ async def create_weather_subscription(request: Request):
             "customFeatures": request_data.get("customFeatures", [])
         }
         
-        # 保存订阅信息
+        # Save subscription information
         subscriptions_db[subscription_id] = subscription
         
-        # 生成支付URL和签名
+        # Generate payment URL and signature
         payment_url = f"https://pay.agent-weather.xyz/pay?orderId={subscription_id}&amount={amount}"
         signature = f"sign_{subscription_id}_{int(datetime.now().timestamp())}"
         
-        # 返回成功响应
+        # Return success response
         return JSONResponse(
             content={
                 "success": True,
-                "msg": "订阅创建成功",
+                "msg": "Subscription created successfully",
                 "data": {
                     "orderNo": subscription["customerOrderNo"],
                     "subscriptionId": subscription_id,
@@ -105,17 +105,17 @@ async def create_weather_subscription(request: Request):
             status_code=400,
             content={
                 "success": False,
-                "msg": "无效的JSON格式",
+                "msg": "Invalid JSON format",
                 "data": None
             }
         )
     except Exception as e:
-        logging.error(f"创建订阅时发生错误: {str(e)}")
+        logging.error(f"Error creating subscription: {str(e)}")
         return JSONResponse(
             status_code=500,
             content={
                 "success": False,
-                "msg": f"服务器内部错误: {str(e)}",
+                "msg": f"Internal server error: {str(e)}",
                 "data": None
             }
         )
@@ -123,18 +123,18 @@ async def create_weather_subscription(request: Request):
 
 @router.get("/api/subscription/status")
 async def get_subscription_status(
-    subscriptionId: str = Query(..., description="订阅ID"),
-    subscriberDID: str = Query(..., description="订阅者DID")
+    subscriptionId: str = Query(..., description="Subscription ID"),
+    subscriberDID: str = Query(..., description="Subscriber DID")
 ):
     """
-    查询天气信息订阅状态
+    Query weather information subscription status
     """
-    # 返回白名单用户需要申请的信息
+    # Return information for whitelist application
     return JSONResponse(
         status_code=200,
         content={
             "success": False,
-            "msg": "天气信息订阅状态查询服务现阶段仅对白名单用户开放，请联系管理员申请白名单资格。",
+            "msg": "Weather information subscription status query service is currently only available to whitelisted users. Please contact the administrator to apply for whitelist qualification.",
             "data": {
                 "contactEmail": "chgaowei@gmail.com",
                 "subscriberDID": subscriberDID,
@@ -144,41 +144,41 @@ async def get_subscription_status(
     )
     
     """
-    # 原有实现（已注释）
+    # Original implementation (commented out)
     try:
-        # 记录请求
-        logging.info(f"收到订阅状态查询请求: subscriptionId={subscriptionId}, subscriberDID={subscriberDID}")
+        # Log request
+        logging.info(f"Received subscription status query request: subscriptionId={subscriptionId}, subscriberDID={subscriberDID}")
         
-        # 检查订阅是否存在
+        # Check if subscription exists
         if subscriptionId not in subscriptions_db:
             return JSONResponse(
                 status_code=404,
                 content={
                     "success": False,
-                    "msg": "订阅不存在",
+                    "msg": "Subscription does not exist",
                     "data": None
                 }
             )
         
-        # 获取订阅信息
+        # Get subscription information
         subscription = subscriptions_db[subscriptionId]
         
-        # 验证DID
+        # Verify DID
         if subscription["subscriberDID"] != subscriberDID:
             return JSONResponse(
                 status_code=401,
                 content={
                     "success": False,
-                    "msg": "DID验证失败，无权访问此订阅",
+                    "msg": "DID verification failed, no permission to access this subscription",
                     "data": None
                 }
             )
         
-        # 计算剩余天数
+        # Calculate remaining days
         expiry_date = datetime.fromisoformat(subscription["expiryDate"])
         remaining_days = (expiry_date - datetime.now()).days
         
-        # 构建响应
+        # Build response
         response_data = {
             "subscriptionId": subscription["subscriptionId"],
             "status": subscription["status"],
@@ -191,22 +191,22 @@ async def get_subscription_status(
             "features": subscription.get("customFeatures", [])
         }
         
-        # 返回成功响应
+        # Return success response
         return JSONResponse(
             content={
                 "success": True,
-                "msg": "查询成功",
+                "msg": "Query successful",
                 "data": response_data
             }
         )
         
     except Exception as e:
-        logging.error(f"查询订阅状态时发生错误: {str(e)}")
+        logging.error(f"Error querying subscription status: {str(e)}")
         return JSONResponse(
             status_code=500,
             content={
                 "success": False,
-                "msg": f"服务器内部错误: {str(e)}",
+                "msg": f"Internal server error: {str(e)}",
                 "data": None
             }
         )

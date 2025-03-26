@@ -8,19 +8,19 @@ import logging
 from pathlib import Path
 from config import AMAP_WEATHER_API_URL, AMAP_API_KEY
 
-# 修改路由前缀，去掉 agents/travel/weather
+# Modified route prefix, removed agents/travel/weather
 router = APIRouter()
 
-# 高德地图天气API参数
+# AMAP Weather API parameters
 AMAP_EXTENSIONS = "all"
 
-# 数据模型
+# Data models
 class WeatherInfoRequest(BaseModel):
-    """天气查询请求模型"""
+    """Weather query request model"""
     cityName: str
 
 class WeatherInfoResponse(BaseModel):
-    """天气查询响应模型"""
+    """Weather query response model"""
     status: str
     count: str
     info: str
@@ -28,38 +28,38 @@ class WeatherInfoResponse(BaseModel):
     forecasts: list
 
 @router.get("/api/weather_info")
-async def get_weather_info(cityName: str = Query(..., description="城市中文名称，用于查询对应城市的天气信息")):
+async def get_weather_info(cityName: str = Query(..., description="Chinese city name, used to query weather information for the corresponding city")):
     """
-    获取城市天气信息
+    Get city weather information
     
-    该接口根据城市名称查询天气信息，通过调用高德地图天气API获取数据
+    This endpoint queries weather information based on city name by calling the AMAP Weather API
     """
     try:
-        # 记录请求数据
-        logging.info(f"收到天气查询请求参数: cityName={cityName}")
+        # Log request data
+        logging.info(f"Received weather query parameters: cityName={cityName}")
         
-        # 验证城市名称长度
+        # Validate city name length
         if len(cityName) <= 1:
             return {
                 "status": "0",
                 "count": "0",
-                "info": "城市名称过短",
+                "info": "City name too short",
                 "infocode": "10003",
                 "forecasts": []
             }
         
-        # 获取城市对应的adcode
+        # Get the adcode corresponding to the city
         adcode = await get_city_adcode(cityName)
         if not adcode:
             return {
                 "status": "0",
                 "count": "0",
-                "info": "城市名称无效",
+                "info": "Invalid city name",
                 "infocode": "10003",
                 "forecasts": []
             }
         
-        # 调用高德地图天气API
+        # Call AMAP Weather API
         params = {
             "city": adcode,
             "key": AMAP_API_KEY,
@@ -70,55 +70,55 @@ async def get_weather_info(cityName: str = Query(..., description="城市中文�
             async with session.get(AMAP_WEATHER_API_URL, params=params) as response:
                 if response.status == 200:
                     weather_data = await response.json()
-                    logging.info(f"获取到天气数据: {json.dumps(weather_data, indent=2)}")
+                    logging.info(f"Retrieved weather data: {json.dumps(weather_data, indent=2)}")
                     return weather_data
                 else:
                     error_text = await response.text()
-                    logging.error(f"天气API请求失败: {response.status}, {error_text}")
+                    logging.error(f"Weather API request failed: {response.status}, {error_text}")
                     return {
                         "status": "0",
                         "count": "0",
-                        "info": f"天气API请求失败: {response.status}",
+                        "info": f"Weather API request failed: {response.status}",
                         "infocode": "10002",
                         "forecasts": []
                     }
                 
     except Exception as e:
-        error_msg = f"获取天气信息时出错: {str(e)}\n{traceback.format_exc()}"
+        error_msg = f"Error getting weather information: {str(e)}\n{traceback.format_exc()}"
         logging.error(error_msg)
         return {
             "status": "0",
             "count": "0",
-            "info": f"获取天气信息时出错: {str(e)}",
+            "info": f"Error getting weather information: {str(e)}",
             "infocode": "10001",
             "forecasts": []
         }
 
 async def get_city_adcode(city_name: str) -> Optional[str]:
     """
-    根据城市名称获取对应的adcode
+    Get the adcode corresponding to a city name
     
     Args:
-        city_name: 城市中文名称
+        city_name: Chinese city name
         
     Returns:
-        城市对应的adcode，如果未找到则返回None
+        The city's adcode, or None if not found
     """
     try:
-        # 获取adcode映射文件路径
+        # Get the path to the adcode mapping file
         current_dir = Path(__file__).parent
         adcode_file_path = current_dir / "amap_adcode.json"
         
-        # 读取adcode映射文件
+        # Read the adcode mapping file
         with open(adcode_file_path, "r", encoding="utf-8") as f:
             adcode_map = json.load(f)
         
-        # 查找城市对应的adcode
-        # 在新的JSON格式中，adcode_map是一个列表，每个元素包含cityName和adcode字段
+        # Find the adcode corresponding to the city
+        # In the new JSON format, adcode_map is a list, with each element containing cityName and adcode fields
         for city_info in adcode_map:
             if city_info["cityName"].startswith(city_name) :
                 return str(city_info["adcode"])
         return None
     except Exception as e:
-        logging.error(f"获取城市adcode时出错: {str(e)}\n{traceback.format_exc()}")
+        logging.error(f"Error getting city adcode: {str(e)}\n{traceback.format_exc()}")
         return None

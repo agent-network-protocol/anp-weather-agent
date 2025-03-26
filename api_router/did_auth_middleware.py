@@ -14,7 +14,7 @@ from agent_connect.authentication import (
 )
 from api_router.jwt_config import get_jwt_private_key, get_jwt_public_key
 
-# 定义豁免路径
+# Define exempt paths
 # EXEMPT_PATHS = ["/agents/travel/weather/api/weather_info", "/agents/travel/weather/ad.json", "/agents/travel/weather/api_files/weather-info.yaml"]
 EXEMPT_PATHS = [
     "/agents/travel/hotel/api/hotel/create_order/ph",
@@ -25,45 +25,45 @@ EXEMPT_PATHS = [
     "/favicon.ico"
 ]
 
-# 时间戳过期时间（分钟）
+# Timestamp expiration time (minutes)
 TIMESTAMP_EXPIRATION_MINUTES = 5
 
-# nonce 过期时间（分钟）
+# Nonce expiration time (minutes)
 NONCE_EXPIRATION_MINUTES = 6
 
-# 添加全局变量来存储已使用的 nonce
+# Add a global variable to store used nonces
 USED_NONCES: Dict[str, Dict[str, datetime]] = {}
 
-# 添加全局变量记录上次清理时间
+# Add a global variable to record the last cleanup time
 LAST_CLEANUP_TIME: datetime = datetime.now(timezone.utc)
 
-# 清理间隔（秒）
+# Cleanup interval (seconds)
 CLEANUP_INTERVAL_SECONDS = 60
 
-# 定义允许的服务器域名列表
+# Define list of allowed server domains
 WBA_SERVER_DOMAINS = ["localhost", "127.0.0.1", "did.agent-connect.com", "service.agent-network-protocol.com"]
 
 def verify_timestamp(timestamp_str: str) -> bool:
     """
-    验证时间戳是否在有效期内
+    Verify if the timestamp is within the valid period
     
     Args:
-        timestamp_str: ISO格式的时间戳字符串
+        timestamp_str: ISO format timestamp string
         
     Returns:
-        bool: 时间戳是否有效
+        bool: Whether the timestamp is valid
     """
     try:
         timestamp = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
         current_time = datetime.now(timezone.utc)
         time_diff = current_time - timestamp
         
-        # 检查时间戳是否在未来
+        # Check if timestamp is in the future
         if timestamp > current_time:
             logging.error("Timestamp is in the future")
             return False
             
-        # 检查时间戳是否过期
+        # Check if timestamp is expired
         if time_diff > timedelta(minutes=TIMESTAMP_EXPIRATION_MINUTES):
             logging.error(f"Timestamp expired. Diff: {time_diff}")
             return False
@@ -75,20 +75,20 @@ def verify_timestamp(timestamp_str: str) -> bool:
 
 def get_and_validate_domain(request: Request) -> str:
     """
-    从请求中获取域名并验证是否在允许列表中
+    Get domain from request and validate if it's in the allowed list
     
     Args:
-        request: FastAPI请求对象
+        request: FastAPI request object
         
     Returns:
-        str: 验证通过的域名
+        str: Validated domain
         
     Raises:
-        HTTPException: 当域名不在允许列表中时
+        HTTPException: When domain is not in the allowed list
     """
     try:
         host = request.headers.get('host', '')
-        # 从host中提取域名（去除端口号）
+        # Extract domain from host (remove port number)
         domain = host.split(':')[0]
         
         # if domain not in WBA_SERVER_DOMAINS:
@@ -107,11 +107,11 @@ def get_and_validate_domain(request: Request) -> str:
         )
 
 async def cleanup_expired_nonces():
-    """清理过期的 nonce 记录"""
+    """Clean up expired nonce records"""
     try:
         current_time = datetime.now(timezone.utc)
         
-        # 清理已使用的过期 nonce
+        # Clean up expired used nonces
         cleaned_count = 0
         for did in list(USED_NONCES.keys()):
             expired_did_nonces = [n for n, t in USED_NONCES[did].items() 
@@ -120,11 +120,11 @@ async def cleanup_expired_nonces():
                 USED_NONCES[did].pop(expired_nonce)
                 cleaned_count += 1
                 
-            # 如果 DID 的所有 nonce 都已过期，删除整个 DID 条目
+            # If all nonces for a DID are expired, remove the entire DID entry
             if not USED_NONCES[did]:
                 USED_NONCES.pop(did)
         
-        # 数据库清理操作（注释掉）
+        # Database cleanup operations (commented out)
         """
         cleanup_query = '''
             DELETE FROM nonces 
@@ -136,7 +136,7 @@ async def cleanup_expired_nonces():
         if cleaned_count > 0:
             logging.info(f"Cleaned up {cleaned_count} expired nonces")
             
-        # 更新上次清理时间
+        # Update last cleanup time
         global LAST_CLEANUP_TIME
         LAST_CLEANUP_TIME = current_time
         
@@ -146,30 +146,30 @@ async def cleanup_expired_nonces():
         traceback.print_exc()
 
 async def check_and_cleanup_if_needed():
-    """检查是否需要清理过期的 nonce，如果需要则清理"""
+    """Check if cleanup of expired nonces is needed, and clean up if necessary"""
     current_time = datetime.now(timezone.utc)
     global LAST_CLEANUP_TIME
     
-    # 如果距离上次清理时间超过了清理间隔，则执行清理
+    # If more time than the cleanup interval has passed since the last cleanup, perform cleanup
     if (current_time - LAST_CLEANUP_TIME).total_seconds() > CLEANUP_INTERVAL_SECONDS:
         await cleanup_expired_nonces()
 
 async def verify_and_record_nonce(did: str, nonce: str) -> bool:
     """
-    验证 nonce 是否有效并记录到本地字典
+    Verify if nonce is valid and record it in the local dictionary
     
     Args:
-        did: DID 标识符
-        nonce: 需要验证的 nonce 值
+        did: DID identifier
+        nonce: nonce value to verify
         
     Returns:
-        bool: nonce 是否有效
+        bool: Whether nonce is valid
         
     Raises:
-        HTTPException: 当 nonce 无效或操作失败时
+        HTTPException: When nonce is invalid or operation fails
     """
     try:
-        # 检查 nonce 是否已被使用
+        # Check if nonce has already been used
         if did in USED_NONCES and nonce in USED_NONCES[did]:
             logging.error(f"Nonce {nonce} has already been used for DID {did}")
             raise HTTPException(
@@ -177,19 +177,19 @@ async def verify_and_record_nonce(did: str, nonce: str) -> bool:
                 detail="Nonce has already been used"
             )
             
-        # 记录新的 nonce
+        # Record new nonce
         current_time = datetime.now(timezone.utc)
         
-        # 如果 DID 不在字典中，创建一个新的条目
+        # If DID is not in the dictionary, create a new entry
         if did not in USED_NONCES:
             USED_NONCES[did] = {}
             
-        # 记录 nonce 使用情况
+        # Record nonce usage
         USED_NONCES[did][nonce] = current_time
         
-        # 数据库操作（注释掉）
+        # Database operations (commented out)
         """
-        # 检查 nonce 是否已存在
+        # Check if nonce already exists
         check_query = '''
             SELECT timestamp, created_at 
             FROM nonces 
@@ -198,14 +198,14 @@ async def verify_and_record_nonce(did: str, nonce: str) -> bool:
         result = execute_query(check_query, did, nonce)
         
         if result:
-            # nonce 已被使用
+            # nonce has been used
             logging.error(f"Nonce {nonce} has already been used for DID {did}")
             raise HTTPException(
                 status_code=401, 
                 detail="Nonce has already been used"
             )
             
-        # 记录新的 nonce
+        # Record new nonce
         current_time = datetime.now(timezone.utc)
         insert_query = '''
             INSERT INTO nonces 
@@ -236,17 +236,17 @@ async def verify_and_record_nonce(did: str, nonce: str) -> bool:
 
 async def generate_did_auth_token(authorization: str, domain: str) -> str:
     """
-    处理 DID 认证并生成 JWT token
+    Process DID authentication and generate JWT token
     
     Args:
-        authorization: DID 认证头
-        domain: 服务器域名
+        authorization: DID authentication header
+        domain: Server domain
         
     Returns:
-        str: 生成的 JWT token
+        str: Generated JWT token
         
     Raises:
-        HTTPException: 当认证失败时
+        HTTPException: When authentication fails
     """
     try:
         did, _, _, _, _ = extract_auth_header_parts(authorization)
@@ -255,28 +255,28 @@ async def generate_did_auth_token(authorization: str, domain: str) -> str:
             logging.error("DID not found in authorization header")
             raise HTTPException(status_code=401, detail="DID not found in authorization")
         
-        # 解析DID文档
+        # Parse DID document
         did_doc = await resolve_did_wba_document(did)
 
         logging.info(f"Resolved DID document: {did_doc}")
         logging.info(f"Domain: {domain}")
         logging.info(f"Authorization: {authorization}")
         
-        # 验证签名
+        # Verify signature
         is_valid, message = verify_auth_header_signature(authorization, did_doc, domain)
         if not is_valid:
             logging.error(f"Signature verification failed: {message}")
             raise HTTPException(status_code=403, detail="Authentication failed")
         
-        # 生成 JWT token
+        # Generate JWT token
         current_time = datetime.now(timezone.utc)
         payload = {
             "sub": did,
-            "exp": current_time + timedelta(seconds=300),  # Token 5分钟后过期
+            "exp": current_time + timedelta(seconds=300),  # Token 5 minutes later expires
             "iat": current_time
         }
 
-        # 使用jwt_config模块获取私钥
+        # Use jwt_config module to get private key
         private_key = get_jwt_private_key()
         if not private_key:
             logging.error("JWT private key not found")
@@ -292,25 +292,25 @@ async def generate_did_auth_token(authorization: str, domain: str) -> str:
 
 async def verify_bearer_token(token: str) -> bool:
     """
-    验证 Bearer token
+    Verify Bearer token
     
     Args:
         token: JWT token
         
     Returns:
-        bool: token 是否有效
+        bool: Whether token is valid
         
     Raises:
-        HTTPException: 当 token 无效或过期时
+        HTTPException: When token is invalid or expired
     """
     try:
-        # 使用jwt_config模块获取公钥
+        # Use jwt_config module to get public key
         public_key = get_jwt_public_key()
         if not public_key:
             logging.error("JWT public key not found")
             raise HTTPException(status_code=500, detail="Server configuration error")
             
-        # 验证 JWT token
+        # Verify JWT token
         jwt.decode(token, public_key, algorithms=["RS256"])
         logging.info("Bearer token verification successful")
         return True
@@ -323,25 +323,25 @@ async def verify_bearer_token(token: str) -> bool:
 
 async def authenticate_did_request(request: Request, authorization: Optional[str] = None) -> Tuple[bool, Optional[str]]:
     """
-    验证 DID 请求
+    Verify DID request
     
     Args:
-        request: FastAPI 请求对象
-        authorization: 认证头（可选）
+        request: FastAPI request object
+        authorization: Authentication header (optional)
         
     Returns:
-        Tuple[bool, Optional[str]]: (是否认证成功, 生成的 token)
+        Tuple[bool, Optional[str]]: (Whether authentication succeeded, Generated token)
         
     Raises:
-        HTTPException: 当认证失败时
+        HTTPException: When authentication fails
     """
     try:
-        # 检查路径是否豁免
+        # Check if path is exempt
         if request.url.path in EXEMPT_PATHS:
             logging.info(f"Path {request.url.path} is in EXEMPT_PATHS, skipping authentication")
             return True, None
             
-        # 如果未提供 authorization，尝试从请求头获取
+        # If authorization is not provided, try to get it from request headers
         if not authorization:
             authorization = request.headers.get("Authorization")
             
@@ -352,18 +352,18 @@ async def authenticate_did_request(request: Request, authorization: Optional[str
         auth_lower = authorization.lower()
         logging.info(f"Authorization type: {'DIDwba' if 'didwba ' in auth_lower else 'Bearer' if 'bearer ' in auth_lower else 'Unknown'}")
         
-        # 获取并验证域名
+        # Get and validate domain
         domain = get_and_validate_domain(request)
         logging.info(f"Validated domain: {domain}")
         
-        # 处理 DID 认证
+        # Process DID authentication
         if "didwba " in auth_lower:
             logging.info("Processing DID authentication")
-            # 提取 DID、nonce 和 timestamp
+            # Extract DID, nonce, and timestamp
             did, nonce, timestamp, _, _ = extract_auth_header_parts(authorization)
             logging.info(f"Extracted DID: {did}, nonce: {nonce}, timestamp: {timestamp}")
             
-            # 验证 timestamp
+            # Verify timestamp
             if not timestamp or not verify_timestamp(timestamp):
                 logging.error(f"Invalid or expired timestamp: {timestamp}")
                 raise HTTPException(
@@ -372,16 +372,16 @@ async def authenticate_did_request(request: Request, authorization: Optional[str
                 )
             logging.info("Timestamp verification successful")
             
-            # 验证并记录 nonce
+            # Verify and record nonce
             await verify_and_record_nonce(did, nonce)
             logging.info("Nonce verification and recording successful")
             
-            # 生成 token
+            # Generate token
             token = await generate_did_auth_token(authorization, domain)
             logging.info(f"Generated token: {token[:30]}...")
             return True, token
         
-        # 处理 Bearer token 认证
+        # Process Bearer token authentication
         elif "bearer " in auth_lower:
             logging.info("Processing Bearer token authentication")
             token = authorization[authorization.lower().find("bearer ") + 7:]
@@ -404,16 +404,16 @@ async def authenticate_did_request(request: Request, authorization: Optional[str
 
 async def did_auth_middleware(request: Request, call_next):
     """
-    DID 认证中间件
+    DID authentication middleware
     
     Args:
-        request: FastAPI 请求对象
-        call_next: 下一个中间件或路由处理函数
+        request: FastAPI request object
+        call_next: Next middleware or route handler function
         
     Returns:
-        Response: 响应对象
+        Response: Response object
     """
-    # 检查是否需要清理过期的 nonce
+    # Check if cleanup of expired nonces is needed
     await check_and_cleanup_if_needed()
     
     try:
@@ -424,11 +424,11 @@ async def did_auth_middleware(request: Request, call_next):
             logging.error(f"Authentication failed: path={request.url.path}")
             return JSONResponse(status_code=401, content={"detail": "Authentication failed"})
             
-        # 如果生成了新 token，添加到响应头
+        # If a new token is generated, add it to response headers
         response = await call_next(request)
         
         if token:
-            # 修改响应头，添加 token
+            # Modify response headers, add token
             logging.info(f"Adding token to response headers: {token[:30]}...")
             response.headers["Authorization"] = f"Bearer {token}"
         else:

@@ -16,23 +16,23 @@ from utils.log_base import setup_logging, set_log_color_level
 from api_router.router import router as agents_router
 from api_router.did_auth_middleware import did_auth_middleware
 
-# 加载环境变量
+# Load environment variables
 load_dotenv()
 
-# 设置路径
+# Set paths
 current_script_path = os.path.abspath(__file__)
 current_directory = os.path.dirname(current_script_path)
 sys.path.append(current_directory)
 
 app = FastAPI()
 
-# 注册路由
+# Register routes
 app.include_router(agents_router)
 
-# 打开跨域
+# Enable CORS
 origins = ["*"]
 
-# 将CORS中间件添加到FastAPI应用中
+# Add CORS middleware to FastAPI application
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -41,7 +41,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 添加DID认证中间件
+# Add DID authentication middleware
 app.middleware("http")(did_auth_middleware)
 
 @app.get("/openapi.yaml", response_class=FileResponse)
@@ -54,19 +54,19 @@ async def get_logo():
 
 @app.get("/legal", response_class=HTMLResponse)
 async def legal_information():
-    return "提供消息发送和接收服务，支持用户之间的即时通讯。允许用户发送消息并查询未接收的消息，支持基于REST API的服务。"
+    return "Provides message sending and receiving services, supporting instant communication between users. Allows users to send messages and query unread messages, supporting REST API-based services."
 
 @app.get("/ai-plugin.json", response_class=FileResponse)
 async def get_baidu_plugin():
     return FileResponse(Path(current_directory) / "protocol" / "ai-plugin.json")
 
 if __name__ == "__main__":
-    # 初始化日志配置
+    # Initialize logging configuration
     setup_logging()
     set_log_color_level(logging.INFO)
 
-    # 如果要修改端口，请确认配置 AGENT_DESCRIPTION_JSON_DOMAIN是否需要修改
+    # If modifying the port, please confirm if AGENT_DESCRIPTION_JSON_DOMAIN needs to be updated
     g_server_port = 9870
 
-    logging.info(f'启动服务，端口号：{g_server_port}')
+    logging.info(f'Starting server on port: {g_server_port}')
     uvicorn.run(app, host="0.0.0.0", port=g_server_port)
