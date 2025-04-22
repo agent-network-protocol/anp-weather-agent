@@ -112,3 +112,18 @@ python anp_weather_agent.py
 ```
 
 服务默认在 `http://localhost:9870` 运行。 
+
+### 使用ANP explorer 工具测试
+
+1. 下载并安装 [ANP explorer]，代码路径：git@github.com:agent-network-protocol/anp-examples.git
+
+2. 安装项目的readme运行，并且打开页面：http://0.0.0.0:9871/
+
+3. 在页面中输入：http://0.0.0.0:9870/ad.json，访问此天气智能体的描述信息
+
+![image](./explorer.png)
+
+
+
+
+
