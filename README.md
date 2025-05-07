@@ -1,14 +1,64 @@
-# Weather Agent Service
+# ANP Weather Agent Service
+
+[English](README.md) | [中文](README.cn.md)
 
 ## 1. Code Functionality
 
-The Weather Agent Service is a FastAPI-based web application that provides weather information query services. It retrieves weather data for cities across the country through the AMAP Weather API and provides a friendly API interface for other applications and agents to access. The service supports DID identity verification to ensure secure API access.
+The Weather Agent Service is a **fully ANP protocol-compliant agent** built on FastAPI, specifically designed to provide weather information query services. This service obtains weather data for cities across China through the Amap (AutoNavi) Weather API and provides API interfaces that conform to ANP specifications, allowing any agent supporting ANP to easily access weather information. The service implements DID identity verification to ensure API access security.
 
 Main features include:
-- Weather Information Query: Get detailed weather forecast information by city name
-- Agent Description: Provide agent description information compliant with ANP protocol
-- Weather Information Subscription: Support subscription to weather information services (currently limited to whitelisted users)
-- Natural Language Interface: Planned support for natural language weather information queries (under development)
+- Weather information query: Allows other agents to obtain detailed weather forecast information through the ANP protocol
+- Agent description: Provides ANP protocol-compliant agent description information (ad.json) for service discovery
+- Weather information subscription: Supports other agents subscribing to weather information services (feature in development)
+- Natural language interface: Plans to support natural language queries for weather information (feature in development)
+
+## 2. ANP Agent Interaction Process
+
+Any agent supporting ANP can interact with the Weather Agent through the ANP protocol and query weather information. The typical interaction flow is as follows:
+
+1. **Service Discovery**: The client agent obtains the Weather Agent's description file (ad.json)
+   - Under default configuration, the ad.json path is: `http://0.0.0.0:9870/ad.json`
+
+2. **Identity Authentication**: The client agent uses the private key corresponding to its DID to sign and send HTTPS requests to obtain the complete ad.json
+
+3. **Service Invocation**: Based on the Interface definitions in ad.json, the client agent calls the relevant weather services
+   - Can obtain current weather information
+   - Can obtain weather forecast information
+   - Can subscribe to weather change notifications (whitelist users)
+
+### ANP Agent Interaction Flow Diagram
+
+```
+┌─────────────────┐                     ┌─────────────────┐
+│                 │                     │                 │
+│  Client Agent   │                     │  Weather Agent  │
+│                 │                     │                 │
+└────────┬────────┘                     └────────┬────────┘
+         │                                       │
+         │  1. Request agent description file    │
+         │  GET /ad.json                         │
+         │───────────────────────────────────────▶
+         │                                       │
+         │  2. Return agent description          │
+         │                                       │
+         │◀───────────────────────────────────────
+         │                                       │
+         │  3. Use DID signature                 │
+         │  Request weather service              │
+         │  POST /v1/weather/info                │
+         │───────────────────────────────────────▶
+         │                                       │
+         │  4. Verify DID identity               │
+         │  Return weather data                  │
+         │                                       │
+         │◀───────────────────────────────────────
+         │                                       │
+┌────────┴────────┐                     ┌────────┴────────┐
+│                 │                     │                 │
+│  Client Agent   │                     │  Weather Agent  │
+│                 │                     │                 │
+└─────────────────┘                     └─────────────────┘
+```
 
 ## 2. Directory Structure
 
@@ -28,13 +78,13 @@ anp-weather-agent/
 │       ├── subscription_router.py # Subscription service API
 │       ├── weather_info_router.py # Weather information API
 │       ├── yaml_router.py    # YAML file API
-│       └── api/              # YAML interface description files directory
+│       └── api/              # YAML interface description file directory
 ├── doc/                      # Documentation and keys
 │   ├── test_jwt_key/         # Test JWT keys
 │   └── use_did_test_public/  # DID test documents
-├── utils/                    # Utilities
+├── utils/                    # Utility classes
 │   ├── __init__.py
-│   └── log_base.py           # Logging configuration
+│   └── log_base.py           # Log configuration
 └── scripts/                  # Test scripts
     ├── test_weather_agent_auth.py
     └── test_weather_agent_discovery.py
@@ -47,7 +97,7 @@ anp-weather-agent/
 - FastAPI
 - Uvicorn
 - aiohttp
-- Poetry (for dependency management)
+- Poetry (dependency management tool)
 
 ### Installation Steps
 
@@ -59,55 +109,66 @@ cd anp-weather-agent
 
 2. Install dependencies with Poetry
 ```bash
-# Install Poetry if you haven't already
+# If Poetry is not installed, you can install it with the following command
 # curl -sSL https://install.python-poetry.org | python3 -
 
 # Install dependencies
 poetry install
 
-# Activate the Poetry virtual environment
+# Activate Poetry virtual environment
 poetry shell
 ```
 
-### Configuration
+### Configuration Instructions
 
-1. Create a `.env` file, refer to `.env.example` for configuration:
+1. Create a `.env` file, referring to `.env.example` for configuration:
 ```
 # Weather service settings
-# Default is AMAP API, you can also replace it with other APIs
+# Default Amap API, you can also use other APIs
 AMAP_WEATHER_API_URL = "https://restapi.amap.com/v3/weather/weatherInfo"
 AMAP_API_KEY = "your-amap-api-key"
 
-# Your agent description json file domain, your sub-URL needs to use this configuration
+# Domain for your agent description json file, your sub-URLs will need this configuration
 # If running locally, you can use localhost:9870, where 9870 is the port number
 AGENT_DESCRIPTION_JSON_DOMAIN = "localhost:9870"
 
 # JWT settings
-# Do not use the following test keys in production environment, these files are for testing only
+# Private and public key files, used to generate and verify JWT tokens
+# Please do not use these test keys in a production environment, these files are for testing only
 JWT_PRIVATE_KEY_PATH = "doc/test_jwt_key/private_key.pem"
 JWT_PUBLIC_KEY_PATH = "doc/test_jwt_key/public_key.pem"
 
 # DID settings
-# The following configuration is only for testing, do not use in production
+# Your DID domain, the following configuration is for testing only, please do not use in a production environment
 DID_DOMAIN = "agent-did.com"
 DID_PATH = "test:public"
 ```
 
-2. Obtain AMAP API Key
-   - Visit [AMAP Open Platform](https://lbs.amap.com/) to register an account
-   - Create an application and enable the Weather API service
+2. Obtain Amap API key
+   - Visit [Amap Open Platform](https://lbs.amap.com/) to register an account
+   - Create an application and enable the weather API service
    - Get the API Key and configure it in the `.env` file
 
-Note: If you need to use another weather information provider, you'll need to modify the relevant code in `api_router/weather/weather_info_router.py` to integrate with the corresponding API interface.
+Note: If you need to use other weather information providers, you need to modify the relevant code in the `api_router/weather/weather_info_router.py` file to connect to the corresponding API interfaces.
 
 ### Starting the Service
 
 ```bash
-# Make sure you're in the Poetry environment
+# Ensure you are in the Poetry environment
 poetry run python anp_weather_agent.py
 
-# Or if you've already activated the Poetry shell
+# Or if you have already activated the Poetry shell
 python anp_weather_agent.py
 ```
 
 The service runs on `http://localhost:9870` by default.
+
+### Testing the Weather Agent with ANP Explorer
+
+1. Download and install [ANP explorer], code path: git@github.com:agent-network-protocol/anp-examples.git
+
+2. Install and run according to the anp-examples project's readme, and open the page: http://0.0.0.0:9871/
+
+3. Enter http://0.0.0.0:9870/ad.json in the page to access this weather agent's description information
+
+![image](./explorer.png)
