@@ -74,4 +74,4 @@ if __name__ == "__main__":
     g_server_port = 9870
 
     logging.info(f"Starting server on port: {g_server_port}")
-    uvicorn.run(app, host="0.0.0.0", port=g_server_port)
+    uvicorn.run(app, host="127.0.0.1", port=g_server_port)
