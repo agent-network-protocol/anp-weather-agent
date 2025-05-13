@@ -1,174 +1,282 @@
-# ANP Weather Agent Service
+# ANP天气智能体服务 (服务端) / ANP Weather Agent Service (Server)
 
-[English](README.md) | [中文](README.cn.md)
+[English](#english) | [中文](#chinese)
 
-## 1. Code Functionality
+<a name="chinese"></a>
+## 中文文档
 
-The Weather Agent Service is a **fully ANP protocol-compliant agent** built on FastAPI, specifically designed to provide weather information query services. This service obtains weather data for cities across China through the Amap (AutoNavi) Weather API and provides API interfaces that conform to ANP specifications, allowing any agent supporting ANP to easily access weather information. The service implements DID identity verification to ensure API access security.
+### 项目介绍
 
-Main features include:
-- Weather information query: Allows other agents to obtain detailed weather forecast information through the ANP protocol
-- Agent description: Provides ANP protocol-compliant agent description information (ad.json) for service discovery
-- Weather information subscription: Supports other agents subscribing to weather information services (feature in development)
-- Natural language interface: Plans to support natural language queries for weather information (feature in development)
+天气智能体服务是一个**完全支持ANP协议的智能体服务**，基于FastAPI构建，专门提供天气信息查询服务。该服务通过高德地图天气API获取全国城市的天气数据，并提供符合ANP规范的API接口，使任何支持ANP的智能体都能轻松访问天气信息。服务实现了DID身份验证，确保API访问的安全性。
 
-## 2. ANP Agent Interaction Process
+主要功能包括：
+- 天气信息查询：让其他智能体能够通过ANP协议获取详细的天气预报信息
+- 智能体描述：提供符合ANP协议的智能体描述信息(ad.json)，便于服务发现
+- 天气信息订阅：支持其他智能体订阅天气信息服务（功能开发中）
+- 自然语言接口：计划支持自然语言查询天气信息（功能开发中）
 
-Any agent supporting ANP can interact with the Weather Agent through the ANP protocol and query weather information. The typical interaction flow is as follows:
+### 项目结构
 
-1. **Service Discovery**: The client agent obtains the Weather Agent's description file (ad.json)
-   - Under default configuration, the ad.json path is: `http://0.0.0.0:9870/ad.json`
+本项目包含以下主要组件：
 
-2. **Identity Authentication**: The client agent uses the private key corresponding to its DID to sign and send HTTPS requests to obtain the complete ad.json
+- **anp_weather_agent.py/**                  # 应用主入口
+- **config.py/**                             # 配置文件
+- **api_router/**                            # API路由定义
+   - **router.py/**                          # 主路由注册
+   - **did_auth_middleware.py/**             # DID认证中间件
+   - **jwt_config.py/**                      # JWT配置
+   - **weather/**                            # 天气相关API
+      - **ad_router.py/**                    # 智能体描述API
+      - **nl_router.py/**                    # 自然语言查询API
+      - **subscription_router.py/**          # 订阅服务API
+      - **weather_info_router.py/**          # 天气信息API
+      - **yaml_router.py/**                  # YAML文件API
+      - **api/**                             # YAML接口描述文件目录
+- **doc/**                                   # 文档和密钥
+   - **test_jwt_key/**                       # 测试JWT密钥
+   - **use_did_test_public//**               # DID测试文档
+- **utils/**                                 # 工具类
+   - **log_base.py/**                        # 日志配置
+- **scripts/**                               # 测试脚本
+   - **test_weather_agent_auth.py/**         # DID认证测试脚本
+   - **test_weather_agent_discovery.py/**    # 智能体发现测试脚本   
 
-3. **Service Invocation**: Based on the Interface definitions in ad.json, the client agent calls the relevant weather services
-   - Can obtain current weather information
-   - Can obtain weather forecast information
-   - Can subscribe to weather change notifications (whitelist users)
+### 如何运行（面向体验用户）
 
-### ANP Agent Interaction Flow Diagram
+#### 环境设置
 
-```
-┌─────────────────┐                     ┌─────────────────┐
-│                 │                     │                 │
-│  Client Agent   │                     │  Weather Agent  │
-│                 │                     │                 │
-└────────┬────────┘                     └────────┬────────┘
-         │                                       │
-         │  1. Request agent description file    │
-         │  GET /ad.json                         │
-         │───────────────────────────────────────▶
-         │                                       │
-         │  2. Return agent description          │
-         │                                       │
-         │◀───────────────────────────────────────
-         │                                       │
-         │  3. Use DID signature                 │
-         │  Request weather service              │
-         │  POST /v1/weather/info                │
-         │───────────────────────────────────────▶
-         │                                       │
-         │  4. Verify DID identity               │
-         │  Return weather data                  │
-         │                                       │
-         │◀───────────────────────────────────────
-         │                                       │
-┌────────┴────────┐                     ┌────────┴────────┐
-│                 │                     │                 │
-│  Client Agent   │                     │  Weather Agent  │
-│                 │                     │                 │
-└─────────────────┘                     └─────────────────┘
-```
+在运行项目之前，你需要设置必要的环境变量。项目中提供了一个 `.env.example` 文件作为模板：
 
-## 2. Directory Structure
+1.  复制 `.env.example` 文件并重命名为 `.env`：
+   ```bash
+   cp .env.example .env
+   ```
+2.  编辑 `.env` 文件，填入你的实际配置信息。
+   ```
+   # 天气服务设置
+   # 默认高德的API，你也可以换成其他的API
+      AMAP_WEATHER_API_URL = "https://restapi.amap.com/v3/weather/weatherInfo"
+      AMAP_API_KEY = "your-amap-api-key"
 
-```
-anp-weather-agent/
-├── anp_weather_agent.py      # Application main entry
-├── config.py                 # Configuration file
-├── api_router/               # API route definitions
-│   ├── __init__.py
-│   ├── router.py             # Main route registration
-│   ├── did_auth_middleware.py # DID authentication middleware
-│   ├── jwt_config.py         # JWT configuration
-│   └── weather/              # Weather-related APIs
-│       ├── __init__.py
-│       ├── ad_router.py      # Agent description API
-│       ├── nl_router.py      # Natural language query API
-│       ├── subscription_router.py # Subscription service API
-│       ├── weather_info_router.py # Weather information API
-│       ├── yaml_router.py    # YAML file API
-│       └── api/              # YAML interface description file directory
-├── doc/                      # Documentation and keys
-│   ├── test_jwt_key/         # Test JWT keys
-│   └── use_did_test_public/  # DID test documents
-├── utils/                    # Utility classes
-│   ├── __init__.py
-│   └── log_base.py           # Log configuration
-└── scripts/                  # Test scripts
-    ├── test_weather_agent_auth.py
-    └── test_weather_agent_discovery.py
-```
+   # 你的agent描述json文件的域名，你的子URL需要使用到这个配置
+   # 如果本地运行，可以使用localhost:9870，其中9870是端口号
+      AGENT_DESCRIPTION_JSON_DOMAIN = "localhost:9870"
 
-## 3. Installation and Configuration
+   # JWT设置
+   # 私钥和公钥文件，用于生成和验证JWT token
+   # 请不要在生产环境中使用这些测试密钥，这些文件仅用于测试
+      JWT_PRIVATE_KEY_PATH = "doc/test_jwt_key/private_key.pem"
+      JWT_PUBLIC_KEY_PATH = "doc/test_jwt_key/public_key.pem"
 
-### Requirements
-- Python 3.8+
-- FastAPI
-- Uvicorn
-- aiohttp
-- Poetry (dependency management tool)
+   # DID设置
+   # 你的DID的域名，以下配置仅用于测试，请不要在生产环境中使用
+      DID_DOMAIN = "agent-did.com"
+      DID_PATH = "test:public"
+   ```
+#### 使用Web应用程序
 
-### Installation Steps
+通过以下步骤，你可以在本地运行Web应用程序。
 
-1. Clone the repository
-```bash
-git clone git@github.com:agent-network-protocol/anp-weather-agent.git
-cd anp-weather-agent
-```
+1. 安装依赖：
+   ```bash
+   # 使用Poetry
+   poetry install
+   
+   # 或使用pip
+   pip install -r requirements.txt
+   ```
 
-2. Install dependencies with Poetry
-```bash
-# If Poetry is not installed, you can install it with the following command
-# curl -sSL https://install.python-poetry.org | python3 -
+2. 启动ANP天气智能体服务（服务端）：
+   
+   运行代码：
+   ```bash
+   python /anp-weather-agent/anp_weather_agent.py
+   ```
 
-# Install dependencies
-poetry install
+3. 启动ANP explorer 工具测试ANP天气智能体
 
-# Activate Poetry virtual environment
-poetry shell
-```
+   以下代码位于anp-examples项目：
 
-### Configuration Instructions
+   方式一：运行脚本
+   ```bash
+   # 使用Poetry
+   ./web_app/run_with_poetry.sh
+   
+   # 或使用脚本
+   ./web_app/run.sh
+   ```
+   方式二：运行代码
+   ```bash
+   python /anp-examples/web_app/backend/anp_examples_backend.py
+   ```
 
-1. Create a `.env` file, referring to `.env.example` for configuration:
-```
+4. 打开浏览器访问：`http://localhost:5000`
+
+5. 在输入框中输入您的问题，并提供智能体URL（`https://127.0.0.1：9870`）
+![查询天气案例](images/anp-examples-client-search.png)
+
+6. 点击"提交问题"按钮，查看结果和网络爬取过程
+![查询天气案例](images/anp-examples-client-result.png)
+
+### 如何开发（面向开发者）
+
+1. 克隆仓库：
+   ```bash
+   git clone git@github.com:agent-network-protocol/anp-weather-agent.git
+   cd anp-weather-agent
+   ```
+2. 安装开发依赖：
+   ```bash
+   # 使用Poetry
+   poetry install
+   
+   # 或使用pip
+   pip install -r requirements.txt
+   ```
+
+3. 运行测试：
+   ```bash
+   python /anp-weather-agent/anp_weather_agent.py
+   ```
+
+4. 观察日志：
+![完整的运行日志](anp-weather-agent.log.md)
+
+---
+
+<a name="english"></a>
+## English Documentation
+
+### Project Introduction
+
+The weather intelligent agent service is a **fully supported ANP protocol intelligent agent service**, built on FastAPI, specifically providing weather information query services.
+This service obtains weather data for cities across the country through the Amap Weather API and provides API interfaces that comply with ANP standards, making it easy for any intelligent agent that supports ANP to access weather information.The service implements DID authentication to ensure the security of API access.
+
+### Project Structure
+
+This project contains the following main components:
+
+- **anp_weather_agent.py/**                  # Application main entrance
+- **config.py/**                             # configuration file
+- **api_router/**                            # API Routing Definition
+   - **router.py/**                          # Main route registration
+   - **did_auth_middleware.py/**             # DID authentication middleware
+   - **jwt_config.py/**                      # JWT configuration
+   - **weather/**                            # Weather related APIs
+      - **ad_router.py/**                    # Intelligent Agent Description API
+      - **nl_router.py/**                    # Natural Language Query API
+      - **subscription_router.py/**          # Subscription Service API
+      - **weather_info_router.py/**          # Weather Information API
+      - **yaml_router.py/**                  # YAML file API
+      - **api/**                             # YAML interface description file 
+- **doc/**                                   # Documents and keys
+   - **test_jwt_key/**                       # Test JWT key
+   - **use_did_test_public//**               # DID Testing Document
+- **utils/**                                 # Tool category
+   - **log_base.py/**                        # Log Configuration
+- **scripts/**                               # Test Script
+   - **test_weather_agent_auth.py/**         # DID Authentication test script
+   - **test_weather_agent_discovery.py/**    # Agent discovery test script   
+
+### How to run (for experiential users)
+
+#### Environment Setup
+
+Before running the project, you need to set up the necessary environment variables. An `.env.example` file is provided as a template:
+
+1.  Copy the `.env.example` file and rename it to `.env`:
+    ```bash
+    cp .env.example .env
+    ```
+2.  Edit the `.env` file and fill in your actual configuration information.
+
 # Weather service settings
-# Default Amap API, you can also use other APIs
-AMAP_WEATHER_API_URL = "https://restapi.amap.com/v3/weather/weatherInfo"
+# Default Gaode API, you can also switch to other APIs
+AMAP_WEATHER_API_URL = " https://restapi.amap.com/v3/weather/weatherInfo "
 AMAP_API_KEY = "your-amap-api-key"
 
-# Domain for your agent description json file, your sub-URLs will need this configuration
-# If running locally, you can use localhost:9870, where 9870 is the port number
+# Your agent describes the domain name of the JSON file, and your sub URL needs to use this configuration
+# f running locally, you can use localhost: 9870, where 9870 is the port number
 AGENT_DESCRIPTION_JSON_DOMAIN = "localhost:9870"
 
 # JWT settings
-# Private and public key files, used to generate and verify JWT tokens
-# Please do not use these test keys in a production environment, these files are for testing only
+# Private and public key files used for generating and verifying JWT tokens
+# Please do not use these test keys in the production environment, these files are only for testing purposes
 JWT_PRIVATE_KEY_PATH = "doc/test_jwt_key/private_key.pem"
 JWT_PUBLIC_KEY_PATH = "doc/test_jwt_key/public_key.pem"
 
 # DID settings
-# Your DID domain, the following configuration is for testing only, please do not use in a production environment
+# Your DID domain name, the following configuration is only for testing purposes, please do not use it in production environments
 DID_DOMAIN = "agent-did.com"
 DID_PATH = "test:public"
-```
 
-2. Obtain Amap API key
-   - Visit [Amap Open Platform](https://lbs.amap.com/) to register an account
-   - Create an application and enable the weather API service
-   - Get the API Key and configure it in the `.env` file
+#### Using the Web Application
 
-Note: If you need to use other weather information providers, you need to modify the relevant code in the `api_router/weather/weather_info_router.py` file to connect to the corresponding API interfaces.
+##### Mode A: Run directly through a browser
+By accessing our application deployed on the web side, you can directly experience the functionality of ANP network exploration tool.
+[Visit website : Https://service.agent-network-protocol.com/anp-demo/](https://service.agent-network-protocol.com/anp-demo/)
+![Weather Case Study](images/anp-examples-web-search-result.png)
 
-### Starting the Service
+##### Mode B：Use script to run
+By following these steps, you can run a web application locally.
 
-```bash
-# Ensure you are in the Poetry environment
-poetry run python anp_weather_agent.py
+1. Install dependencies:
+   ```bash
+   # Using Poetry
+   poetry install
+   
+   # Or using pip
+   pip install -r requirements.txt
+   ```
 
-# Or if you have already activated the Poetry shell
-python anp_weather_agent.py
-```
+2. Start ANP weather intelligent agent service (server):
+   ```bash
+   python /anp-weather-agent/anp_weather_agent.py
+   ```
 
-The service runs on `http://localhost:9870` by default.
+3. Launch ANP explorer tool to test ANP weather agent
+   The following code is located in the anp-examples project:
+   Mode A：Run the script
+   ```bash
+   # Using Poetry
+   ./web_app/run_with_poetry.sh
+   
+   # Or use scripts
+   ./web_app/run.sh
+   ```
+   Mode B：Run the code
+   ```bash
+   python /anp-examples/web_app/backend/anp_examples_backend.py
+   ```
 
-### Testing the Weather Agent with ANP Explorer
+4. Open browser and visit:`http://localhost:5000`
 
-1. Download and install [ANP explorer], code path: git@github.com:agent-network-protocol/anp-examples.git
+5. Enter your question in the input box and provide an agent URL（`https://127.0.0.1：9870`）
+![查询天气案例](images/anp-examples-client-search.png)
 
-2. Install and run according to the anp-examples project's readme, and open the page: http://0.0.0.0:9871/
+6. Click the "Submit" button，and view results and the network crawling process
+![查询天气案例](images/anp-examples-client-result.png)
 
-3. Enter http://0.0.0.0:9870/ad.json in the page to access this weather agent's description information
+### How to Develop (for Developers)
 
-![image](./explorer.png)
+1. Clone the repository:
+   ```bash
+   git clone git@github.com:agent-network-protocol/anp-weather-agent.git
+   cd anp-weather-agent
+   ```
+2. Install development dependencies:
+   ```bash
+   # Using Poetry
+   poetry install
+   
+   # or Use pip
+   pip install -r requirements.txt
+   ```
+
+3. Run tests:
+   ```bash
+   python /anp-weather-agent/anp_weather_agent.py
+   ```
+
+4.  Observe logs:
+![Complete operation log](anp-weather-agent.log.md)

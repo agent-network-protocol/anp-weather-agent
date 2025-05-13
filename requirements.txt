@@ -1,0 +1,11 @@
+fastapi==0.115.12   
+uvicorn==0.34.2  
+python-dotenv==1.0.1
+openai==1.78.0    
+pydantic==2.9.2
+aiohttp==3.11.18   
+pyyaml==6.0
+agent-connect==0.3.5
+cryptography>=43.0.3,<44.0.0
+pyjwt==2.10.1   
+requests==2.32.3
