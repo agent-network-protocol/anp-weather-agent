@@ -196,7 +196,7 @@ Before running the project, you need to set up the necessary environment variabl
    AMAP_API_KEY = "your-amap-api-key"
 
    # Your agent describes the domain name of the JSON file, and your sub URL needs to use this configuration
-   # f running locally, you can use localhost: 9870, where 9870 is the port number
+   # If running locally, you can use localhost: 9870, where 9870 is the port number
    AGENT_DESCRIPTION_JSON_DOMAIN = "localhost:9870"
 
    # JWT settings
