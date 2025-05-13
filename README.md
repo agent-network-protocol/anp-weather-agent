@@ -185,39 +185,34 @@ This project contains the following main components:
 Before running the project, you need to set up the necessary environment variables. An `.env.example` file is provided as a template:
 
 1.  Copy the `.env.example` file and rename it to `.env`:
-    ```bash
-    cp .env.example .env
-    ```
+   ```bash
+   cp .env.example .env
+   ```
 2.  Edit the `.env` file and fill in your actual configuration information.
+   ```
+   # Weather service settings
+   # Default Gaode API, you can also switch to other APIs
+   AMAP_WEATHER_API_URL = " https://restapi.amap.com/v3/weather/weatherInfo "
+   AMAP_API_KEY = "your-amap-api-key"
 
-# Weather service settings
-# Default Gaode API, you can also switch to other APIs
-AMAP_WEATHER_API_URL = " https://restapi.amap.com/v3/weather/weatherInfo "
-AMAP_API_KEY = "your-amap-api-key"
+   # Your agent describes the domain name of the JSON file, and your sub URL needs to use this configuration
+   # f running locally, you can use localhost: 9870, where 9870 is the port number
+   AGENT_DESCRIPTION_JSON_DOMAIN = "localhost:9870"
 
-# Your agent describes the domain name of the JSON file, and your sub URL needs to use this configuration
-# f running locally, you can use localhost: 9870, where 9870 is the port number
-AGENT_DESCRIPTION_JSON_DOMAIN = "localhost:9870"
+   # JWT settings
+   # Private and public key files used for generating and verifying JWT tokens
+   # Please do not use these test keys in the production environment, these files are only for testing purposes
+   JWT_PRIVATE_KEY_PATH = "doc/test_jwt_key/private_key.pem"
+   JWT_PUBLIC_KEY_PATH = "doc/test_jwt_key/public_key.pem"
 
-# JWT settings
-# Private and public key files used for generating and verifying JWT tokens
-# Please do not use these test keys in the production environment, these files are only for testing purposes
-JWT_PRIVATE_KEY_PATH = "doc/test_jwt_key/private_key.pem"
-JWT_PUBLIC_KEY_PATH = "doc/test_jwt_key/public_key.pem"
-
-# DID settings
-# Your DID domain name, the following configuration is only for testing purposes, please do not use it in production environments
-DID_DOMAIN = "agent-did.com"
-DID_PATH = "test:public"
+   # DID settings
+   # Your DID domain name, the following configuration is only for testing purposes, please do not use it in production environments
+   DID_DOMAIN = "agent-did.com"
+   DID_PATH = "test:public"
+   ```
 
 #### Using the Web Application
 
-##### Mode A: Run directly through a browser
-By accessing our application deployed on the web side, you can directly experience the functionality of ANP network exploration tool.
-[Visit website : Https://service.agent-network-protocol.com/anp-demo/](https://service.agent-network-protocol.com/anp-demo/)
-![Weather Case Study](images/anp-examples-web-search-result.png)
-
-##### Mode B：Use script to run
 By following these steps, you can run a web application locally.
 
 1. Install dependencies:
