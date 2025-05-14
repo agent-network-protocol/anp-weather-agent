@@ -110,7 +110,7 @@
    python /anp-examples/web_app/backend/anp_examples_backend.py
    ```
 
-4. 打开浏览器访问：`http://localhost:5000`
+4. 打开浏览器访问：`http://localhost:5005`
 
 5. 在输入框中输入您的问题，并提供智能体URL（`https://127.0.0.1：9870`）
 ![查询天气案例](images/anp-examples-client-search.png)
@@ -244,7 +244,7 @@ By following these steps, you can run a web application locally.
    python /anp-examples/web_app/backend/anp_examples_backend.py
    ```
 
-4. Open browser and visit:`http://localhost:5000`
+4. Open browser and visit:`http://localhost:5005`
 
 5. Enter your question in the input box and provide an agent URL（`https://127.0.0.1：9870`）
 ![查询天气案例](images/anp-examples-client-search.png)
