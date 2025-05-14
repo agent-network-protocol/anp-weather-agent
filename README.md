@@ -140,7 +140,7 @@
    ```
 
 4. 观察日志：
-![完整的运行日志](anp-weather-agent.log.md)
+[完整的运行日志](anp-weather-agent.log.md)
 
 ---
 
@@ -274,4 +274,4 @@ By following these steps, you can run a web application locally.
    ```
 
 4.  Observe logs:
-![Complete operation log](anp-weather-agent.log.md)
+[Complete operation log](anp-weather-agent.log.md)
