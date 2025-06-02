@@ -9,8 +9,15 @@
 
 天气智能体服务是一个**完全支持ANP协议的智能体服务**，基于FastAPI构建，专门提供天气信息查询服务。该服务通过高德地图天气API获取全国城市的天气数据，并提供符合ANP规范的API接口，使任何支持ANP的智能体都能轻松访问天气信息。服务实现了DID身份验证，确保API访问的安全性。
 
+**新功能：MCP协议支持**
+该服务现在完全支持MCP (Model Context Protocol) 协议，提供：
+- MCP服务器配置：支持高德天气MCP服务器接入
+- MCP天气查询：通过MCP协议提供实时天气信息
+- MCP能力描述：完整的MCP能力声明和接口描述
+
 主要功能包括：
 - 天气信息查询：让其他智能体能够通过ANP协议获取详细的天气预报信息
+- **MCP协议支持：通过MCP协议提供结构化的天气服务接口**
 - 智能体描述：提供符合ANP协议的智能体描述信息(ad.json)，便于服务发现
 - 天气信息订阅：支持其他智能体订阅天气信息服务（功能开发中）
 - 自然语言接口：计划支持自然语言查询天气信息（功能开发中）
@@ -27,6 +34,8 @@
    - **jwt_config.py/**                      # JWT配置
    - **weather/**                            # 天气相关API
       - **ad_router.py/**                    # 智能体描述API
+      - **mcp_ad_router.py/**                # MCP智能体描述API
+      - **mcp_weather_router.py/**           # MCP天气查询API
       - **nl_router.py/**                    # 自然语言查询API
       - **subscription_router.py/**          # 订阅服务API
       - **weather_info_router.py/**          # 天气信息API
@@ -39,7 +48,42 @@
    - **log_base.py/**                        # 日志配置
 - **scripts/**                               # 测试脚本
    - **test_weather_agent_auth.py/**         # DID认证测试脚本
-   - **test_weather_agent_discovery.py/**    # 智能体发现测试脚本   
+   - **test_weather_agent_discovery.py/**    # 智能体发现测试脚本
+   - **test_mcp_weather_agent.py/**          # MCP功能测试脚本
+
+### MCP协议支持
+
+#### MCP接口列表
+
+1. **MCP智能体描述** (`/mcp/ad.json`)
+   - 提供MCP协议的智能体描述信息
+   - 包含所有MCP接口的完整清单
+
+2. **MCP服务器配置** (`/mcp/servers`)
+   - 提供高德天气MCP服务器配置
+   - 支持Server-Sent Events (SSE) 连接
+   - 配置格式：
+   ```json
+   {
+     "mcpServers": {
+       "amap-weather-sse": {
+         "url": "https://mcp.amap.com/sse?key=您的高德API密钥",
+         "description": "AMAP weather service via MCP protocol",
+         "capabilities": ["weather_query", "forecast", "air_quality"]
+       }
+     }
+   }
+   ```
+
+3. **MCP天气查询** (`/mcp/weather?city=城市名`)
+   - 通过MCP协议格式提供天气信息
+   - 支持实时天气和预报数据
+   - 返回标准化的MCP响应格式
+
+4. **MCP能力描述** (`/mcp/capabilities`)
+   - 详细描述支持的MCP操作
+   - 包含接口端点和参数说明
+   - 支持的操作：weather_current, weather_forecast, air_quality, server_discovery
 
 ### 如何运行（面向体验用户）
 
@@ -73,6 +117,25 @@
       DID_DOMAIN = "agent-did.com"
       DID_PATH = "test:public"
    ```
+
+#### 测试MCP功能
+
+1. 启动服务：
+   ```bash
+   python anp_weather_agent.py
+   ```
+
+2. 运行MCP测试脚本：
+   ```bash
+   poetry run python scripts/test_mcp_weather_agent.py
+   ```
+
+3. 测试MCP接口：
+   - MCP智能体描述：`GET /mcp/ad.json`
+   - MCP服务器配置：`GET /mcp/servers`
+   - MCP天气查询：`GET /mcp/weather?city=Beijing`
+   - MCP能力描述：`GET /mcp/capabilities`
+
 #### 使用Web应用程序
 
 通过以下步骤，你可以在本地运行Web应用程序。
@@ -152,6 +215,12 @@
 The weather intelligent agent service is a **fully supported ANP protocol intelligent agent service**, built on FastAPI, specifically providing weather information query services.
 This service obtains weather data for cities across the country through the Amap Weather API and provides API interfaces that comply with ANP standards, making it easy for any intelligent agent that supports ANP to access weather information.The service implements DID authentication to ensure the security of API access.
 
+**New Feature: MCP Protocol Support**
+This service now fully supports the MCP (Model Context Protocol), providing:
+- MCP Server Configuration: Support for high-quality weather MCP server access
+- MCP Weather Query: Provide real-time weather information through MCP protocol
+- MCP Capability Description: Complete MCP capability declaration and interface description
+
 ### Project Structure
 
 This project contains the following main components:
@@ -164,6 +233,8 @@ This project contains the following main components:
    - **jwt_config.py/**                      # JWT configuration
    - **weather/**                            # Weather related APIs
       - **ad_router.py/**                    # Intelligent Agent Description API
+      - **mcp_ad_router.py/**                # MCP Intelligent Agent Description API
+      - **mcp_weather_router.py/**           # MCP Weather Query API
       - **nl_router.py/**                    # Natural Language Query API
       - **subscription_router.py/**          # Subscription Service API
       - **weather_info_router.py/**          # Weather Information API
@@ -176,7 +247,42 @@ This project contains the following main components:
    - **log_base.py/**                        # Log Configuration
 - **scripts/**                               # Test Script
    - **test_weather_agent_auth.py/**         # DID Authentication test script
-   - **test_weather_agent_discovery.py/**    # Agent discovery test script   
+   - **test_weather_agent_discovery.py/**    # Agent discovery test script
+   - **test_mcp_weather_agent.py/**          # MCP Function test script
+
+### MCP Protocol Support
+
+#### MCP Interface List
+
+1. **MCP Intelligent Agent Description** (`/mcp/ad.json`)
+   - Provide MCP protocol intelligent agent description information
+   - Include a complete list of all MCP interfaces
+
+2. **MCP Server Configuration** (`/mcp/servers`)
+   - Provide high-quality weather MCP server configuration
+   - Support Server-Sent Events (SSE) connection
+   - Configuration format:
+   ```json
+   {
+     "mcpServers": {
+       "amap-weather-sse": {
+         "url": "https://mcp.amap.com/sse?key=Your high-quality weather API key",
+         "description": "AMAP weather service via MCP protocol",
+         "capabilities": ["weather_query", "forecast", "air_quality"]
+       }
+     }
+   }
+   ```
+
+3. **MCP Weather Query** (`/mcp/weather?city=City Name`)
+   - Provide weather information through MCP protocol format
+   - Support real-time weather and forecast data
+   - Return standardized MCP response format
+
+4. **MCP Capability Description** (`/mcp/capabilities`)
+   - Detailed description of supported MCP operations
+   - Include interface endpoints and parameter descriptions
+   - Supported operations: weather_current, weather_forecast, air_quality, server_discovery
 
 ### How to run (for experiential users)
 
@@ -210,6 +316,24 @@ Before running the project, you need to set up the necessary environment variabl
    DID_DOMAIN = "agent-did.com"
    DID_PATH = "test:public"
    ```
+
+#### Test MCP Function
+
+1. Start service:
+   ```bash
+   python anp_weather_agent.py
+   ```
+
+2. Run MCP test script:
+   ```bash
+   poetry run python scripts/test_mcp_weather_agent.py
+   ```
+
+3. Test MCP interface:
+   - MCP Intelligent Agent Description: `GET /mcp/ad.json`
+   - MCP Server Configuration: `GET /mcp/servers`
+   - MCP Weather Query: `GET /mcp/weather?city=Beijing`
+   - MCP Capability Description: `GET /mcp/capabilities`
 
 #### Using the Web Application
 
