@@ -35,7 +35,6 @@
    - **weather/**                            # 天气相关API
       - **ad_router.py/**                    # 智能体描述API
       - **mcp_ad_router.py/**                # MCP智能体描述API
-      - **mcp_weather_router.py/**           # MCP天气查询API
       - **nl_router.py/**                    # 自然语言查询API
       - **subscription_router.py/**          # 订阅服务API
       - **weather_info_router.py/**          # 天气信息API
@@ -59,31 +58,6 @@
    - 提供MCP协议的智能体描述信息
    - 包含所有MCP接口的完整清单
 
-2. **MCP服务器配置** (`/mcp/servers`)
-   - 提供高德天气MCP服务器配置
-   - 支持Server-Sent Events (SSE) 连接
-   - 配置格式：
-   ```json
-   {
-     "mcpServers": {
-       "amap-weather-sse": {
-         "url": "https://mcp.amap.com/sse?key=您的高德API密钥",
-         "description": "AMAP weather service via MCP protocol",
-         "capabilities": ["weather_query", "forecast", "air_quality"]
-       }
-     }
-   }
-   ```
-
-3. **MCP天气查询** (`/mcp/weather?city=城市名`)
-   - 通过MCP协议格式提供天气信息
-   - 支持实时天气和预报数据
-   - 返回标准化的MCP响应格式
-
-4. **MCP能力描述** (`/mcp/capabilities`)
-   - 详细描述支持的MCP操作
-   - 包含接口端点和参数说明
-   - 支持的操作：weather_current, weather_forecast, air_quality, server_discovery
 
 ### 如何运行（面向体验用户）
 
@@ -234,7 +208,6 @@ This project contains the following main components:
    - **weather/**                            # Weather related APIs
       - **ad_router.py/**                    # Intelligent Agent Description API
       - **mcp_ad_router.py/**                # MCP Intelligent Agent Description API
-      - **mcp_weather_router.py/**           # MCP Weather Query API
       - **nl_router.py/**                    # Natural Language Query API
       - **subscription_router.py/**          # Subscription Service API
       - **weather_info_router.py/**          # Weather Information API
@@ -258,31 +231,6 @@ This project contains the following main components:
    - Provide MCP protocol intelligent agent description information
    - Include a complete list of all MCP interfaces
 
-2. **MCP Server Configuration** (`/mcp/servers`)
-   - Provide high-quality weather MCP server configuration
-   - Support Server-Sent Events (SSE) connection
-   - Configuration format:
-   ```json
-   {
-     "mcpServers": {
-       "amap-weather-sse": {
-         "url": "https://mcp.amap.com/sse?key=Your high-quality weather API key",
-         "description": "AMAP weather service via MCP protocol",
-         "capabilities": ["weather_query", "forecast", "air_quality"]
-       }
-     }
-   }
-   ```
-
-3. **MCP Weather Query** (`/mcp/weather?city=City Name`)
-   - Provide weather information through MCP protocol format
-   - Support real-time weather and forecast data
-   - Return standardized MCP response format
-
-4. **MCP Capability Description** (`/mcp/capabilities`)
-   - Detailed description of supported MCP operations
-   - Include interface endpoints and parameter descriptions
-   - Supported operations: weather_current, weather_forecast, air_quality, server_discovery
 
 ### How to run (for experiential users)
 
