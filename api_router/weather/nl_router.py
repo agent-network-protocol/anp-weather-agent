@@ -28,10 +28,6 @@ async def ask_weather_question(request: Request):
     Process natural language questions about weather and return streaming answers
     """
     try:
-        # Parse request data
-        data = await request.json()
-        question = data.get("question")
-
         response = "Please use structured interface to query weather information, natural language queries are not supported yet, will be added later."
 
         # Return streaming response

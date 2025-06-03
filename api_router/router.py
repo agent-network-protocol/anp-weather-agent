@@ -7,7 +7,7 @@ import asyncio
 from .discovery_router import router as discovery_router
 import logging
 from .weather.ad_router import router as weather_ad_router
-from .weather.mcp_ad_router import router as weather_mcp_ad_router
+from .weather.mcp_agent_ad_router import router as weather_mcp_agent_ad_router
 from .weather.yaml_router import router as weather_yaml_router
 from .weather.weather_info_router import router as weather_info_router
 from .weather.nl_router import router as weather_nl_router
@@ -20,7 +20,7 @@ router.include_router(discovery_router)
 
 # 注册天气路由
 router.include_router(weather_ad_router)
-router.include_router(weather_mcp_ad_router)
+router.include_router(weather_mcp_agent_ad_router)
 router.include_router(weather_yaml_router)
 router.include_router(weather_info_router)
 router.include_router(weather_subscription_router)

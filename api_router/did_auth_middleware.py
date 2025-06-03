@@ -179,6 +179,8 @@ async def verify_and_record_nonce(did: str, nonce: str) -> bool:
         HTTPException: When nonce is invalid or operation fails
     """
     try:
+        logging.info(f"Verifying nonce: {nonce} for DID: {did}")
+        
         # Check if nonce has already been used
         if did in USED_NONCES and nonce in USED_NONCES[did]:
             logging.error(f"Nonce {nonce} has already been used for DID {did}")
@@ -193,40 +195,6 @@ async def verify_and_record_nonce(did: str, nonce: str) -> bool:
 
         # Record nonce usage
         USED_NONCES[did][nonce] = current_time
-
-        # Database operations (commented out)
-        """
-        # Check if nonce already exists
-        check_query = '''
-            SELECT timestamp, created_at 
-            FROM nonces 
-            WHERE did = %s AND nonce = %s
-        '''
-        result = execute_query(check_query, did, nonce)
-        
-        if result:
-            # nonce has been used
-            logging.error(f"Nonce {nonce} has already been used for DID {did}")
-            raise HTTPException(
-                status_code=401, 
-                detail="Nonce has already been used"
-            )
-            
-        # Record new nonce
-        current_time = datetime.now(timezone.utc)
-        insert_query = '''
-            INSERT INTO nonces 
-            (did, nonce, timestamp, created_at) 
-            VALUES (%s, %s, %s, %s)
-        '''
-        execute_insert(
-            insert_query, 
-            did, 
-            nonce, 
-            current_time,
-            current_time
-        )
-        """
 
         return True
 
