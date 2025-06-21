@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "travel-anp-agent"
+name = "anp-weather-agent"
 version = "0.1.0"
 description = "Travel ANP Agent"
 authors = ["Author <author@example.com>"]

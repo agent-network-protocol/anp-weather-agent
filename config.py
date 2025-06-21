@@ -21,6 +21,7 @@ AMAP_WEATHER_API_URL = os.getenv(
     "AMAP_WEATHER_API_URL", "https://restapi.amap.com/v3/weather/weatherInfo"
 )
 AMAP_API_KEY = os.getenv("AMAP_API_KEY", "apikey-test")
+KuaiDi100_API_KEY = os.getenv("KuaiDi100_API_KEY", "apikey-test")
 
 # JWT settings
 JWT_PRIVATE_KEY_PATH = os.getenv(

@@ -107,7 +107,7 @@ async def test_mcp_ad_json(auth_client: DIDWbaAuthHeader) -> bool:
     Returns:
         bool: Whether test was successful
     """
-    url = f"{SERVER_URL}/mcp/agents/weather/ad.json"
+    url = f"{SERVER_URL}/mcp/agents/total/ad.json"
     logger.info(f"Testing MCP agent description API: {url}")
 
     status, data = await send_request(url, auth_client)

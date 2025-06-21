@@ -101,11 +101,11 @@
 
 2. 运行MCP测试脚本：
    ```bash
-   poetry run python scripts/test_mcp_weather_agent.py
+   poetry run python scripts/test_mcp_agent.py
    ```
 
 3. 测试MCP接口：
-   - MCP智能体描述：`GET /mcp/ad.json`
+   - MCP智能体描述：`GET /mcp/agents/total/ad.json`
    - MCP服务器配置：`GET /mcp/servers`
    - MCP天气查询：`GET /mcp/weather?city=Beijing`
    - MCP能力描述：`GET /mcp/capabilities`

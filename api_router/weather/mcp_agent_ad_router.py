@@ -14,135 +14,12 @@ except ImportError:
     MCP_AVAILABLE = False
     logging.warning("MCP SDK not available, falling back to HTTP-only mode")
 
-from config import AGENT_DESCRIPTION_JSON_DOMAIN, DID_DOMAIN, DID_PATH, AMAP_API_KEY
+from config import AGENT_DESCRIPTION_JSON_DOMAIN, DID_DOMAIN, DID_PATH
+from api_router.weather.mcp_server_manager import mcp_server_manager
 
 # Create router with modified route prefix
 router = APIRouter()
 
-# Global variables to cache MCP server data
-mcp_tools_cache: List[Dict[str, Any]] = []
-mcp_resources_cache: List[Dict[str, Any]] = []
-
-def get_mcp_server_config(tool_name: str) -> Optional[Tuple[str, Dict[str, str]]]:
-    """
-    Get MCP server configuration based on tool name prefix
-    
-    Args:
-        tool_name: Name of the tool (e.g., 'amap_get_weather')
-        
-    Returns:
-        Tuple of (server_url, headers) or None if not found
-    """
-    # Parse provider prefix from tool name
-    if '_' not in tool_name:
-        return None
-    
-    provider_prefix = tool_name.split('_')[0].lower()
-    
-    # Map providers to their MCP server configurations
-    server_configs = {
-        'amap': {
-            'url': f"https://mcp.amap.com/sse?key={AMAP_API_KEY}",
-            'headers': {
-                'X-API-Key': AMAP_API_KEY
-            }
-        },
-        # Future providers can be added here:
-        # 'openweather': {
-        #     'url': f"https://mcp.openweather.com/sse?key={OPENWEATHER_API_KEY}",
-        #     'headers': {
-        #         'X-API-Key': OPENWEATHER_API_KEY
-        #     }
-        # }
-    }
-    
-    config = server_configs.get(provider_prefix)
-    if config:
-        return config['url'], config['headers']
-    
-    return None
-
-async def initialize_mcp_servers():
-    """Initialize all supported MCP servers and cache their tools and resources"""
-    global mcp_tools_cache, mcp_resources_cache
-    
-    # Clear existing cache
-    mcp_tools_cache.clear()
-    mcp_resources_cache.clear()
-    
-    if not MCP_AVAILABLE:
-        logging.warning("MCP SDK not available, skipping MCP server initialization")
-        return
-    
-    # Define supported providers - only server URLs, no predefined tools/resources
-    providers_config = {
-        'amap': {
-            'server_url': f"https://mcp.amap.com/sse?key={AMAP_API_KEY}",
-            'headers': {
-                'X-API-Key': AMAP_API_KEY
-            }
-        }
-    }
-    
-    try:
-        # Try to connect to each provider's MCP server using proper MCP SDK
-        for provider, config in providers_config.items():
-            server_url = config['server_url']
-            
-            logging.info(f"Testing connection to {provider} MCP server at {server_url}")
-            
-            try:
-                # Use proper MCP SDK connection as shown in reference code
-                async with sse_client(server_url) as (read, write):
-                    async with ClientSession(read, write) as session:
-                        # Initialize the MCP session
-                        await session.initialize()
-                        logging.info(f"Successfully connected and initialized {provider} MCP server")
-                        
-                        # Get tools from server using MCP SDK
-                        try:
-                            tools_result = await session.list_tools()
-                            
-                            # Add actual tools from server with provider as attribute
-                            for tool in tools_result.tools:
-                                tool_info = {
-                                    "name": tool.name,  # Keep original tool name without prefix
-                                    "provider": provider,  # Add provider as separate attribute
-                                    "description": getattr(tool, "description", "No description available"),
-                                    "inputSchema": getattr(tool, "inputSchema", {})
-                                }
-                                mcp_tools_cache.append(tool_info)
-                            
-                            logging.info(f"Loaded {len(tools_result.tools)} tools from {provider} MCP server")
-                        except Exception as e:
-                            logging.warning(f"Failed to get tools from {provider} MCP server: {str(e)}")
-                        
-                        # Get resources from server using MCP SDK
-                        try:
-                            resources_result = await session.list_resources()
-                            
-                            # Add actual resources from server with provider prefix  
-                            for resource in resources_result.resources:
-                                resource_info = {
-                                    "uri": f"{provider}://{resource.uri}",
-                                    "name": f"{provider.upper()} {resource.name}",
-                                    "description": getattr(resource, "description", ""),
-                                    "mimeType": getattr(resource, "mimeType", "text/plain")
-                                }
-                                mcp_resources_cache.append(resource_info)
-                            
-                            logging.info(f"Loaded {len(resources_result.resources)} resources from {provider} MCP server")
-                        except Exception as e:
-                            logging.warning(f"Failed to get resources from {provider} MCP server: {str(e)}")
-                        
-            except Exception as e:
-                # Connection failed, log error but don't add fallback data
-                logging.error(f"Failed to connect to {provider} MCP server using MCP SDK: {str(e)}")
-        
-        logging.info(f"Initialized MCP proxy with {len(mcp_tools_cache)} tools and {len(mcp_resources_cache)} resources from remote servers")
-                
-    except Exception as e:
-        logging.error(f"Failed to initialize MCP servers: {str(e)}")
 
 async def call_mcp_tool_with_sdk(provider: str, tool_name: str, tool_args: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -161,7 +38,7 @@ async def call_mcp_tool_with_sdk(provider: str, tool_name: str, tool_args: Dict[
         raise Exception("MCP SDK not available")
     
     # Get server configuration
-    server_config = get_mcp_server_config(f"{provider}_dummy")
+    server_config = mcp_server_manager.get_mcp_server_config(f"{provider}_dummy")
     if not server_config:
         logging.error(f"No MCP server configured for provider '{provider}'")
         raise Exception(f"No MCP server configured for provider '{provider}'")
@@ -224,7 +101,7 @@ async def read_mcp_resource_with_sdk(provider: str, resource_path: str) -> Dict[
         raise Exception("MCP SDK not available")
     
     # Get server configuration
-    server_config = get_mcp_server_config(f"{provider}_dummy")
+    server_config = mcp_server_manager.get_mcp_server_config(f"{provider}_dummy")
     if not server_config:
         raise Exception(f"No MCP server configured for provider '{provider}'")
     
@@ -271,31 +148,31 @@ async def read_mcp_resource_with_sdk(provider: str, resource_path: str) -> Dict[
         logging.error(f"MCP resource read failed: {str(e)}")
         raise Exception(f"MCP resource read failed: {str(e)}")
 
-@router.get("/mcp/agents/weather/ad.json")
-async def get_weather_agent_description():
+@router.get("/mcp/agents/total/ad.json")
+async def get_total_agent_description():
     """
-    Provide weather agent description information with MCP tools and resources
+    提供所有服务提供商的天气代理描述信息汇总（兼容性接口）
 
     Returns:
-        Weather agent description in JSON-LD format with MCP integration
+        所有提供商的天气代理描述信息汇总（JSON-LD 格式）
     """
     try:
         # Initialize MCP servers if not already done
-        if not mcp_tools_cache and not mcp_resources_cache:
-            await initialize_mcp_servers()
+        if not mcp_server_manager.get_tools_cache() and not mcp_server_manager.get_resources_cache():
+            await mcp_server_manager.initialize_mcp_servers()
         
         # Create weather agent description with MCP tools and resources
-        weather_agent = {
+        service_agent = {
             "@context": {
                 "@vocab": "https://schema.org/",
                 "did": "https://w3id.org/did#",
                 "ad": "https://agent-network-protocol.com/ad#",
             },
             "@type": "ad:AgentDescription",
-            "@id": f"http://{AGENT_DESCRIPTION_JSON_DOMAIN}/mcp/ad.json",
-            "name": "Weather Agent MCP",
+            "@id": f"http://{AGENT_DESCRIPTION_JSON_DOMAIN}/mcp/agents/total/ad.json",
+            "name": "Anp Service Agent With MCP - Total Providers",
             "did": f"did:wba:{DID_DOMAIN}:{DID_PATH}",
-            "description": "Weather agent providing weather information lookup services via MCP protocol for cities across the country. Supports multiple weather data providers including AMAP.",
+            "description": "The Anp agent provides various services through the MCP protocol.",
             "version": "1.0.0",
             "owner": {
                 "@type": "Organization",
@@ -315,7 +192,7 @@ async def get_weather_agent_description():
         }
         
         # Add MCP tools as structured interfaces
-        for tool in mcp_tools_cache:
+        for tool in mcp_server_manager.get_tools_cache():
             interface = {
                 "@type": "ad:StructuredInterface",
                 "protocol": {
@@ -332,10 +209,10 @@ async def get_weather_agent_description():
                 },
                 "url": f"http://{AGENT_DESCRIPTION_JSON_DOMAIN}/mcp/tools/{tool['provider']}"
             }
-            weather_agent["ad:interfaces"].append(interface)
+            service_agent["ad:interfaces"].append(interface)
         
         # Add MCP resources
-        for resource in mcp_resources_cache:
+        for resource in mcp_server_manager.get_resources_cache():
             resource_item = {
                 "@type": "ad:Resource",
                 "uri": resource["uri"],
@@ -344,25 +221,186 @@ async def get_weather_agent_description():
                 "mimeType": resource["mimeType"],
                 "url": f"http://{AGENT_DESCRIPTION_JSON_DOMAIN}/mcp/resources?uri={resource['uri']}"
             }
-            weather_agent["ad:resources"].append(resource_item)
+            service_agent["ad:resources"].append(resource_item)
 
-        logging.info(f"Returning weather agent description with {len(mcp_tools_cache)} tools and {len(mcp_resources_cache)} resources")
+        logging.info(f"Returning weather agent description with {len(mcp_server_manager.get_tools_cache())} tools and {len(mcp_server_manager.get_resources_cache())} resources")
         return JSONResponse(
-            content=weather_agent, media_type="application/json; charset=utf-8"
+            content=service_agent, media_type="application/json; charset=utf-8"
         )
-
     except Exception as e:
-        logging.error(f"Error getting weather agent description: {str(e)}")
-        error_response = {
-            "error": "Error getting weather agent description",
-            "details": str(e),
+        logging.error(f"Failed to get weather agent description: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/mcp/agents/providers")
+async def get_available_providers():
+    """
+    获取所有可用的服务提供商列表
+
+    Returns:
+        可用服务提供商的列表
+    """
+    try:
+        # Initialize MCP servers if not already done
+        if not mcp_server_manager.get_tools_cache() and not mcp_server_manager.get_resources_cache():
+            await mcp_server_manager.initialize_mcp_servers()
+        
+        # 收集所有可用的提供商
+        providers_info = {}
+        
+        # 从工具中收集提供商信息
+        for tool in mcp_server_manager.get_tools_cache():
+            provider = tool.get("provider")
+            if provider:
+                if provider not in providers_info:
+                    providers_info[provider] = {
+                        "name": provider,
+                        "tools_count": 0,
+                        "resources_count": 0,
+                        "tools": [],
+                        "ad_url": f"http://{AGENT_DESCRIPTION_JSON_DOMAIN}/mcp/agents/{provider}/ad.json"
+                    }
+                providers_info[provider]["tools_count"] += 1
+                providers_info[provider]["tools"].append({
+                    "name": tool["name"],
+                    "description": tool["description"]
+                })
+        
+        # 从资源中收集提供商信息
+        for resource in mcp_server_manager.get_resources_cache():
+            uri = resource.get("uri", "")
+            if "://" in uri:
+                provider = uri.split("://")[0]
+                if provider in providers_info:
+                    providers_info[provider]["resources_count"] += 1
+        
+        result = {
+            "total_providers": len(providers_info),
+            "providers": list(providers_info.values())
         }
+        
+        logging.info(f"Returning {len(providers_info)} available providers")
+        return JSONResponse(content=result, media_type="application/json; charset=utf-8")
+        
+    except Exception as e:
+        logging.error(f"Failed to get available providers: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/mcp/agents/{provider}/ad.json")
+async def get_service_agent_description_by_provider(provider: str):
+    """
+    根据指定的提供商返回天气代理描述信息
+    
+    Args:
+        provider: 服务提供商名称（如 'amap', 'kuaidi' 等）
+
+    Returns:
+        指定提供商的天气代理描述信息（JSON-LD 格式）
+    """
+    try:
+        # Initialize MCP servers if not already done
+        if not mcp_server_manager.get_tools_cache() and not mcp_server_manager.get_resources_cache():
+            await mcp_server_manager.initialize_mcp_servers()
+        
+        # 检查提供商是否存在
+        available_providers = set()
+        for tool in mcp_server_manager.get_tools_cache():
+            available_providers.add(tool.get("provider"))
+        for resource in mcp_server_manager.get_resources_cache():
+            # 从 URI 中提取提供商名称（格式：provider://...）
+            uri = resource.get("uri", "")
+            if "://" in uri:
+                resource_provider = uri.split("://")[0]
+                available_providers.add(resource_provider)
+        
+        if provider not in available_providers:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Provider '{provider}' not found. Available providers: {list(available_providers)}"
+            )
+        
+        # 获取指定提供商的工具和资源
+        provider_tools = [tool for tool in mcp_server_manager.get_tools_cache() if tool.get("provider") == provider]
+        provider_resources = []
+        for resource in mcp_server_manager.get_resources_cache():
+            uri = resource.get("uri", "")
+            if uri.startswith(f"{provider}://"):
+                provider_resources.append(resource)
+        
+        # Create weather agent description for specific provider
+        service_agent = {
+            "@context": {
+                "@vocab": "https://schema.org/",
+                "did": "https://w3id.org/did#",
+                "ad": "https://agent-network-protocol.com/ad#",
+            },
+            "@type": "ad:AgentDescription",
+            "@id": f"http://{AGENT_DESCRIPTION_JSON_DOMAIN}/mcp/agents/{provider}/ad.json",
+            "name": f"Anp Service Agent MCP - {provider.upper()}",
+            "did": f"did:wba:{DID_DOMAIN}:{DID_PATH}:{provider}",
+            "description": f"The Anp service agent provides various services via {provider.upper()} MCP protocol.",
+            "version": "1.0.0",
+            "provider": provider,
+            "owner": {
+                "@type": "Organization",
+                "name": f"{AGENT_DESCRIPTION_JSON_DOMAIN}",
+                "@id": f"https://{AGENT_DESCRIPTION_JSON_DOMAIN}",
+            },
+            "ad:securityDefinitions": {
+                "didwba_sc": {
+                    "scheme": "didwba",
+                    "in": "header",
+                    "name": "Authorization",
+                }
+            },
+            "ad:security": "didwba_sc",
+            "ad:interfaces": [],
+            "ad:resources": []
+        }
+        
+        # Add MCP tools for this provider
+        for tool in provider_tools:
+            interface = {
+                "@type": "ad:StructuredInterface",
+                "protocol": {
+                    "name": "JSON-RPC",
+                    "version": "2.0",
+                    "transport": "HTTP",
+                    "HTTP Method": "POST"
+                },
+                "schema": {
+                    "method": tool["name"],
+                    "description": tool["description"],
+                    "params": tool["inputSchema"],
+                    "annotations": tool.get("annotations", {}),
+                },
+                "url": f"http://{AGENT_DESCRIPTION_JSON_DOMAIN}/mcp/tools/{provider}"
+            }
+            service_agent["ad:interfaces"].append(interface)
+        
+        # Add MCP resources for this provider
+        for resource in provider_resources:
+            resource_item = {
+                "@type": "ad:Resource",
+                "uri": resource["uri"],
+                "name": resource["name"],
+                "description": resource["description"],
+                "mimeType": resource["mimeType"],
+                "url": f"http://{AGENT_DESCRIPTION_JSON_DOMAIN}/mcp/resources?uri={resource['uri']}"
+            }
+            service_agent["ad:resources"].append(resource_item)
+
+        logging.info(f"Returning {provider} agent description with {len(provider_tools)} tools and {len(provider_resources)} resources")
         return JSONResponse(
-            status_code=500,
-            content=error_response,
-            media_type="application/json; charset=utf-8",
+            content=service_agent, media_type="application/json; charset=utf-8"
         )
 
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Failed to get agent description for provider {provider}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @router.post("/mcp/tools/{provider}")
 async def call_mcp_tool(provider: str, request_data: Dict[str, Any]):
@@ -401,7 +439,7 @@ async def call_mcp_tool(provider: str, request_data: Dict[str, Any]):
         # Validate that the tool exists for the specified provider
         tool_exists = any(
             tool["name"] == tool_name and tool["provider"] == provider 
-            for tool in mcp_tools_cache
+            for tool in mcp_server_manager.get_tools_cache()
         )
         
         if not tool_exists:
@@ -504,7 +542,7 @@ async def get_mcp_resource(uri: str):
     """
     try:
         # Validate that the resource exists
-        resource_exists = any(resource["uri"] == uri for resource in mcp_resources_cache)
+        resource_exists = any(resource["uri"] == uri for resource in mcp_server_manager.get_resources_cache())
         if not resource_exists:
             raise HTTPException(status_code=404, detail=f"Resource '{uri}' not found")
         
