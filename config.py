@@ -9,7 +9,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).parent
 
 # DID configurations
-DID_DOMAIN = os.getenv("DID_DOMAIN", "agent-did.com")
+DID_DOMAIN = os.getenv("DID_DOMAIN", "didhost.cc")
 DID_PATH = os.getenv("DID_PATH", "test:public")
 
 AGENT_DESCRIPTION_JSON_DOMAIN = os.getenv(

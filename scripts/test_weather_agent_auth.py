@@ -257,7 +257,7 @@ async def test_subscription_api(auth_client: DIDWbaAuthHeader) -> bool:
     subscription_data = {
         "customerOrderNo": f"TEST-ORDER-{asyncio.get_event_loop().time()}",
         "subscriptionType": "monthly",
-        "subscriberDID": "did:wba:agent-did.com:test:public",
+        "subscriberDID": "did:wba:didhost.cc:test:public",
         "contactName": "Test User",
         "contactMobile": "13800138000",
         "contactEmail": "test@example.com",
@@ -306,7 +306,7 @@ async def test_subscription_api(auth_client: DIDWbaAuthHeader) -> bool:
         auth_client,
         params={
             "subscriptionId": test_subscription_id,
-            "subscriberDID": "did:wba:agent-did.com:test:public",
+            "subscriberDID": "did:wba:didhost.cc:test:public",
         },
     )
 

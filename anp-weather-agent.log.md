@@ -36,7 +36,7 @@ ted domain: 127.0.0.1
 sing DID authentication
 ## ?[0m
 ## ?[92m2025-05-13 06:32:42,606 - INFO - did_auth_middleware.py:383 - Extrac
-ted DID: did:wba:agent-did.com:test:public, nonce: 09d6b7a709708c66f1c020
+ted DID: did:wba:didhost.cc:test:public, nonce: 09d6b7a709708c66f1c020
 d769c2cdb0, timestamp: 2025-05-12T22:32:39Z
 ## ?[0m
 ## ?[92m2025-05-13 06:32:42,607 - INFO - did_auth_middleware.py:393 - Timest
@@ -46,27 +46,27 @@ amp verification successful
 verification and recording successful
 ## ?[0m
 ## ?[92m2025-05-13 06:32:42,624 - INFO - did_wba.py:172 - Resolving DID docu
-ment for: did:wba:agent-did.com:test:public
+ment for: did:wba:didhost.cc:test:public
 ## ?[0m
 ## ?[92m2025-05-13 06:32:43,556 - INFO - did_wba.py:220 - Successfully resol
-ved DID document for: did:wba:agent-did.com:test:public
+ved DID document for: did:wba:didhost.cc:test:public
 ## ?[0m
 ## ?[92m2025-05-13 06:32:43,608 - INFO - did_auth_middleware.py:268 - Resolv
 ed DID document: {'@context': ['https://www.w3.org/ns/did/v1', 'https://w
 3id.org/security/suites/jws-2020/v1', 'https://w3id.org/security/suites/s
-ecp256k1-2019/v1'], 'id': 'did:wba:agent-did.com:test:public', 'verificat
-ionMethod': [{'id': 'did:wba:agent-did.com:test:public#key-1', 'type': 'E
-cdsaSecp256k1VerificationKey2019', 'controller': 'did:wba:agent-did.com:t
+ecp256k1-2019/v1'], 'id': 'did:wba:didhost.cc:test:public', 'verificat
+ionMethod': [{'id': 'did:wba:didhost.cc:test:public#key-1', 'type': 'E
+cdsaSecp256k1VerificationKey2019', 'controller': 'did:wba:didhost.cc:t
 est:public', 'publicKeyJwk': {'kty': 'EC', 'crv': 'secp256k1', 'x': 'kNcf
 Vufb4qxUpTC7kT6V56zSFEXbyo3nTDUFxqaZbKs', 'y': 'upHpNoIm8h6cDRZqNWjb4VXba
 niq2zz43yQoiR8Zfqs', 'kid': '4QOVubQtyJL_fzKreUfKDTOjrYAFRsq6XZ4Itqn2jLg'
-}}], 'authentication': ['did:wba:agent-did.com:test:public#key-1']}
+}}], 'authentication': ['did:wba:didhost.cc:test:public#key-1']}
 ## ?[0m
 ## ?[92m2025-05-13 06:32:43,658 - INFO - did_auth_middleware.py:269 - Domain
 : 127.0.0.1
 ## ?[0m
 ## ?[92m2025-05-13 06:32:43,733 - INFO - did_auth_middleware.py:270 - Author
-ization: DIDWba did="did:wba:agent-did.com:test:public", nonce="09d6b7a70
+ization: DIDWba did="did:wba:didhost.cc:test:public", nonce="09d6b7a70
 9708c66f1c020d769c2cdb0", timestamp="2025-05-12T22:32:39Z", verification_
 method="key-1", signature="fhwnjVRUnT8HwaD_zGSQQGSUW9k9wUcS_HLxtVv7Zncu98
 bvecQD1zA5euB7z0X85VMW06yEEJDNbd4nVYcUDw"
@@ -78,7 +78,7 @@ ntication header verification
 d private key from doc/test_jwt_key/private_key.pem
 ## ?[0m
 ## ?[92m2025-05-13 06:32:44,029 - INFO - did_auth_middleware.py:294 - Genera
-ted JWT token for DID: did:wba:agent-did.com:test:public
+ted JWT token for DID: did:wba:didhost.cc:test:public
 ## ?[0m
 ## ?[92m2025-05-13 06:32:44,082 - INFO - did_auth_middleware.py:401 - Genera
 ted token: eyJhbGciOiJSUzI1NiIsInR5cCI6Ik...
@@ -115,7 +115,7 @@ ted domain: 127.0.0.1
 sing DID authentication
 ## ?[0m
 ## ?[92m2025-05-13 06:32:47,556 - INFO - did_auth_middleware.py:383 - Extrac
-ted DID: did:wba:agent-did.com:test:public, nonce: 09d6b7a709708c66f1c020
+ted DID: did:wba:didhost.cc:test:public, nonce: 09d6b7a709708c66f1c020
 d769c2cdb0, timestamp: 2025-05-12T22:32:39Z
 ## ?[0m
 ## ?[92m2025-05-13 06:32:47,557 - INFO - did_auth_middleware.py:393 - Timest
@@ -143,7 +143,7 @@ ted domain: 127.0.0.1
 sing DID authentication
 ## ?[0m
 ## ?[92m2025-05-13 06:32:47,571 - INFO - did_auth_middleware.py:383 - Extrac
-ted DID: did:wba:agent-did.com:test:public, nonce: 11569883380c695e991322
+ted DID: did:wba:didhost.cc:test:public, nonce: 11569883380c695e991322
 3ca4ce87e6, timestamp: 2025-05-12T22:32:47Z
 ## ?[0m
 ## ?[92m2025-05-13 06:32:47,572 - INFO - did_auth_middleware.py:393 - Timest
@@ -153,27 +153,27 @@ amp verification successful
 verification and recording successful
 ## ?[0m
 ## ?[92m2025-05-13 06:32:47,573 - INFO - did_wba.py:172 - Resolving DID docu
-ment for: did:wba:agent-did.com:test:public
+ment for: did:wba:didhost.cc:test:public
 ## ?[0m
 ## ?[92m2025-05-13 06:32:48,319 - INFO - did_wba.py:220 - Successfully resol
-ved DID document for: did:wba:agent-did.com:test:public
+ved DID document for: did:wba:didhost.cc:test:public
 ## ?[0m
 ## ?[92m2025-05-13 06:32:48,324 - INFO - did_auth_middleware.py:268 - Resolv
 ed DID document: {'@context': ['https://www.w3.org/ns/did/v1', 'https://w
 3id.org/security/suites/jws-2020/v1', 'https://w3id.org/security/suites/s
-ecp256k1-2019/v1'], 'id': 'did:wba:agent-did.com:test:public', 'verificat
-ionMethod': [{'id': 'did:wba:agent-did.com:test:public#key-1', 'type': 'E
-cdsaSecp256k1VerificationKey2019', 'controller': 'did:wba:agent-did.com:t
+ecp256k1-2019/v1'], 'id': 'did:wba:didhost.cc:test:public', 'verificat
+ionMethod': [{'id': 'did:wba:didhost.cc:test:public#key-1', 'type': 'E
+cdsaSecp256k1VerificationKey2019', 'controller': 'did:wba:didhost.cc:t
 est:public', 'publicKeyJwk': {'kty': 'EC', 'crv': 'secp256k1', 'x': 'kNcf
 Vufb4qxUpTC7kT6V56zSFEXbyo3nTDUFxqaZbKs', 'y': 'upHpNoIm8h6cDRZqNWjb4VXba
 niq2zz43yQoiR8Zfqs', 'kid': '4QOVubQtyJL_fzKreUfKDTOjrYAFRsq6XZ4Itqn2jLg'
-}}], 'authentication': ['did:wba:agent-did.com:test:public#key-1']}
+}}], 'authentication': ['did:wba:didhost.cc:test:public#key-1']}
 ## ?[0m
 ## ?[92m2025-05-13 06:32:48,328 - INFO - did_auth_middleware.py:269 - Domain
 : 127.0.0.1
 ## ?[0m
 ## ?[92m2025-05-13 06:32:48,330 - INFO - did_auth_middleware.py:270 - Author
-ization: DIDWba did="did:wba:agent-did.com:test:public", nonce="115698833
+ization: DIDWba did="did:wba:didhost.cc:test:public", nonce="115698833
 80c695e9913223ca4ce87e6", timestamp="2025-05-12T22:32:47Z", verification_
 method="key-1", signature="6jaedKeUUCABokziwFX3QC5DREySi6JF4jLUGryftnI1mt
 dkPSw118pxYnzyq2A9K0JasTxCJbnsQ4E3QpZ-RQ"
@@ -185,7 +185,7 @@ ntication header verification
 d private key from doc/test_jwt_key/private_key.pem
 ## ?[0m
 ## ?[92m2025-05-13 06:32:48,446 - INFO - did_auth_middleware.py:294 - Genera
-ted JWT token for DID: did:wba:agent-did.com:test:public
+ted JWT token for DID: did:wba:didhost.cc:test:public
 ## ?[0m
 ## ?[92m2025-05-13 06:32:48,449 - INFO - did_auth_middleware.py:401 - Genera
 ted token: eyJhbGciOiJSUzI1NiIsInR5cCI6Ik...

@@ -70,7 +70,7 @@
 
    # DID设置
    # 你的DID的域名，以下配置仅用于测试，请不要在生产环境中使用
-      DID_DOMAIN = "agent-did.com"
+      DID_DOMAIN = "didhost.cc"
       DID_PATH = "test:public"
    ```
 #### 使用Web应用程序
@@ -207,7 +207,7 @@ Before running the project, you need to set up the necessary environment variabl
 
    # DID settings
    # Your DID domain name, the following configuration is only for testing purposes, please do not use it in production environments
-   DID_DOMAIN = "agent-did.com"
+   DID_DOMAIN = "didhost.cc"
    DID_PATH = "test:public"
    ```
 
